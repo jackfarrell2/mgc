@@ -1,0 +1,40 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width-device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">"
+        <link href="{% static 'golf/styles.css' %}" rel="stylesheet">
+
+        <title>{% block title %}MGC{% endblock %}</title>
+    
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'index' %}"></a>
+                <div>
+                    <ul class="navbar-nav me-auto mt-2">
+                        {% if not user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Log In </a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register </a></li>
+                        {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Log Out </a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Rounds </a></li>
+                        <li class="nav-iten"><a class="nav-link" href="{% url 'index' %}">Holes </a></li>
+                        <li class="nav-iten"><a class="nav-link" href="{% url 'index' %}">Vs </a></li>
+                        <li class="nav-iten"><a class="nav-link" href="{% url 'index' %}">Post a Match </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <main class="container-fluid py-5 text-center">
+            {% block main %}{% endblock %}
+        </main>
+    </body>
+</html>
