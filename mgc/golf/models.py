@@ -7,7 +7,17 @@ class User(AbstractUser):
 
 class Course(models.Model):
     name = models.CharField(max_length=50)
-    tees = models.CharField(max_length=10, default="White")
+    WHITE = 'White'
+    BLUE = 'Blue'
+    RED = 'Red'
+    BLACK = 'Black'
+    TEE_CHOICES = [
+        (WHITE, 'White'),
+        (BLUE, 'Blue'),
+        (RED, 'Red'),
+        (BLACK, 'Black')
+    ]
+    tees = models.CharField(max_length=6, choices=TEE_CHOICES, default=WHITE)
     par = models.IntegerField()
     yardage = models.IntegerField()
 
