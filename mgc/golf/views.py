@@ -1,4 +1,4 @@
-from curses.ascii import HT
+from datetime import datetime
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -94,7 +94,10 @@ def post(request):
         handicaps.append(holes[i].handicap)
         pars.append(holes[i].par)
     golfers = User.objects.exclude(pk=1) # Provide option drop down menu to switch golfer
-    context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees}
+    # Create default date as a placeholder date
+    now = datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
     return render(request, "golf/post.html", context)
 
 
@@ -149,7 +152,10 @@ def post_tees(request, name, tees):
             handicaps.append(holes[i].handicap)
             pars.append(holes[i].par)
         golfers = User.objects.exclude(pk=1)
-        context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees}
+        # Create default date as a placeholder date
+        now = datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
         return render(request, "golf/post.html", context)
     else:
         pass

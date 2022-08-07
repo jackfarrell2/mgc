@@ -1,0 +1,124 @@
+.grid {
+    display: grid;
+    place-items: center;
+    padding: 15px;
+}
+
+nav {
+    background-color: #198754;
+    height: 80px;
+}
+
+#nav a {
+    color: white;
+}
+
+li .nav-item {
+    color: white;
+}
+
+.scorecard {
+    table-layout: fixed;
+    width: 95%;
+    padding-top: 30px;
+    padding-bottom: 15px;
+    border-bottom: #cac2c2 1px solid;
+    padding-left: 15px;
+    margin: 20px;
+    margin-top: 3px;
+    
+}
+
+.holes-row {
+    color: white;
+    background-color: black;
+    text-align: center;
+    font-weight: bold;
+}
+
+.yardages-row {
+    text-align: center;
+}
+
+.handicap-row {
+    text-align: center;
+    color: black;
+    background-color: rgb(161, 149, 149);
+}
+
+.scores-row {
+    text-align: center;
+}
+
+.pars-row {
+    color: white;
+    background-color: black;
+    text-align: center;
+}
+
+.scorecard-header {
+    text-align: left;
+    font-weight: 400;
+}
+
+input[type='number'] {
+    width: 55px;
+    height: 40px;
+    text-align: center;
+}
+
+input[type='date'] {
+    margin-top: 15px;
+}
+
+input, button {
+    padding: 7px;
+}
+
+button {
+    margin: 10px;
+}
+
+td, th {
+    padding: 5px;
+    border-style: solid;
+    border-color: gray;
+    border-width: 1px;
+}
+
+#course {
+    margin: 0px;
+    float: left;
+    height: 50px;
+}
+
+#date {
+    margin: 0px;
+    float: right;
+}
+
+#general-info {
+    margin: 0 auto;
+    width: 95%;
+    text-align: center;
+}
+
+#add-golfer {
+    margin: 0px;
+    float: left;
+    height: 40px;
+    font-size: 15px;
+}
+
+#post-match {
+    margin: 0px;
+    float: right;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+#buttons {
+    margin: 0 auto;
+    width: 95%;
+    text-align: center;
+}

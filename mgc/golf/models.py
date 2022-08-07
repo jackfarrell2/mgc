@@ -18,7 +18,11 @@ class Course(models.Model):
         (BLACK, 'Black')
     ]
     tees = models.CharField(max_length=6, choices=TEE_CHOICES, default=WHITE)
+    front_par = models.IntegerField()
+    back_par = models.IntegerField()
     par = models.IntegerField()
+    front_yardage = models.IntegerField()
+    back_yardage = models.IntegerField()
     yardage = models.IntegerField()
 
     def __str__(self):

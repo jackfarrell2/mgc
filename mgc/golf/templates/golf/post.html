@@ -2,95 +2,102 @@
 {% load static %}
 
 {% block main %}
-<form action="{% url 'post' %}" method="post">
-    <!-- Select a course -->
-    <select name="course" id="course">
-        {% for course_name in course_names %}
-        <option value="{{ course }}">{{ course_name }}</option>
-        {% endfor %}
-    </select>
+<form class="grid" action="{% url 'post' %}" method="post">
+    <!-- Select a course and date -->
+    <div id="general-info">
+        <select name="course" id="course">
+            {% for course_name in course_names %}
+            <option value="{{ course_name }}">{{ course_name }}</option>
+            {% endfor %}
+        </select>
+        <input id="date" type="date" name="round_date" value="{{ date }}">
+    </div>
+    <table class="scorecard">
+        <!-- Holes -->
+        <tr class="holes-row">
+            <th class="scorecard-header"><strong>Hole</strong></th>
+            {% for i in course_length %}
+            <td>{{ i }}</td>
+            {% endfor %}
+            <td>OUT</td>
+            {% for i in course_length %}
+            <td>{{ i|add:"9" }}</td>
+            {% endfor %}
+            <td>IN</td>
+            <td>TOT</td>
+        </tr>
+        <!-- Yardages -->
+        <tr class="yardages-row">
+            <th class="scorecard-header">
+                <select name="tees" id="tees">
+                    {% for available_tee in available_tees %}
+                    <option value="{{ available_tee }}">{{ available_tee }}</option>
+                    {% endfor %}
+                </select>
+            </th>
+            {% for yardage in yardages|slice:":9" %}
+            <td>{{ yardage }}</td>
+            {% endfor %}
+            <td>{{ default_course.front_yardage }}</td>
+            {% for yardage in yardages|slice:"9:" %}
+            <td>{{ yardage }}</td>
+            {% endfor %}
+            <td>{{ default_course.back_yardage }}</td>
+            <td>{{ default_course.yardage }}</td>
+        </tr>
+        <!-- Handicaps -->
+        <tr class="handicap-row">
+            <th class="scorecard-header">Handicap</th>
+            {% for handicap in handicaps|slice:":9" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            {% for handicap in handicaps|slice:"9:" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- Scores -->
+        <tr class="scores-row">
+            <th class="scorecard-header">
+                <select name="golfer" id="golfer">
+                    <option disabled selected>Golfer</option>
+                    {% for golfer in golfers %}
+                    <option value="{{ golfer }}">{{ golfer }}</option>
+                    {% endfor %}
+                </select>
+            </th>
+            {% for i in course_length %}
+            <td><input type='number' min='1' max='9'></td>
+            {% endfor %}
+            <td><input type='number' min='9' max='100'></td>
+            {% for i in course_length %}
+            <td><input type='number' min='1' max='9'></td>
+            {% endfor %}
+            <td><input type='number' min='9' max='100'></td>
+            <td><input type='number' min='18' max='150'></td>
+        </tr>
+        <!-- Pars -->
+        <tr class="pars-row">
+            <th class="scorecard-header">Par</th>
+            {% for par in pars|slice:":9" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ default_course.front_par }}</td>
+            {% for par in pars|slice:"9:" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ default_course.back_par }}</td>
+            <td>{{ default_course.par }}</td>
+        </tr>
+    </table>
+    <div id="buttons">
+        <button class="btn btn-warning btn-med" id="add-golfer" type="button">Add Golfer</button>
+        <input class="btn btn-success btn-med" id="post-match" type="submit" value="Post Match">
+    </div>
 </form>
-<table>
-    <!-- Holes -->
-    <tr>
-        <th>HOLE</th>
-        {% for i in course_length %}
-        <td>{{ i }}</td>
-        {% endfor %}
-        <td>OUT</td>
-        {% for i in course_length %}
-        <td>{{ i|add:"9" }}</td>
-        {% endfor %}
-        <td>IN</td>
-        <td>TOT</td>
-    </tr>
-    <!-- Yardages -->
-    <tr>
-        <th>
-            <select name="tees" id="tees">
-                {% for available_tee in available_tees %}
-                <option value="{{ available_tee }}">{{ available_tee }}</option>
-                {% endfor %}
-            </select>
-        </th>
-        {% for yardage in yardages|slice:":9" %}
-        <td>{{ yardage }}</td>
-        {% endfor %}
-        <td>OUT</td>
-        {% for yardage in yardages|slice:"9:" %}
-        <td>{{ yardage }}</td>
-        {% endfor %}
-        <td>IN</td>
-        <td>TOT</td>
-    </tr>
-    <!-- Handicaps -->
-    <tr>
-        <th i>Handicap</th>
-        {% for handicap in handicaps|slice:":9" %}
-        <td>{{ handicap }}</td>
-        {% endfor %}
-        <td>OUT</td>
-        {% for handicap in handicaps|slice:"9:" %}
-        <td>{{ handicap }}</td>
-        {% endfor %}
-        <td>IN</td>
-        <td>TOT</td>
-    </tr>
-    <!-- Scores -->
-    <tr>
-        <th>
-            <select name="golfer" id="golfer">
-                {% for golfer in golfers %}
-                <option value="{{ golfer }}">{{ golfer }}</option>
-                {% endfor %}
-            </select>
-        </th>
-        {% for i in course_length %}
-        <td><input type='number' min='1' max='9'></td>
-        {% endfor %}
-        <td><input type='number' min='9' max='100'></td>
-        {% for i in course_length %}
-        <td>
-        <td><input type='number' min='1' max='9'></td>
-        </td>
-        {% endfor %}
-        <td><input type='number' min='9' max='100'></td>
-        <td><input type='number' min='18' max='150'></td>
-    </tr>
-    <!-- Yardages -->
-    <tr>
-        <th>Par</th>
-        {% for par in pars|slice:":9" %}
-        <td>{{ par }}</td>
-        {% endfor %}
-        <td>OUT</td>
-        {% for par in pars|slice:"9:" %}
-        <td>{{ par }}</td>
-        {% endfor %}
-        <td>IN</td>
-        <td>TOT</td>
-    </tr>
-</table>
+
 {% endblock %}
 
 {% block script %}
