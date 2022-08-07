@@ -26,7 +26,7 @@ li .nav-item {
     padding-left: 15px;
     margin: 20px;
     margin-top: 3px;
-    
+
 }
 
 .holes-row {
@@ -62,7 +62,7 @@ li .nav-item {
 }
 
 input[type='number'] {
-    width: 55px;
+    width: 35px;
     height: 40px;
     text-align: center;
 }
@@ -71,7 +71,8 @@ input[type='date'] {
     margin-top: 15px;
 }
 
-input, button {
+input,
+button {
     padding: 7px;
 }
 
@@ -79,11 +80,16 @@ button {
     margin: 10px;
 }
 
-td, th {
+td,
+th {
     padding: 5px;
     border-style: solid;
     border-color: gray;
     border-width: 1px;
+}
+
+th {
+    width: 100px;
 }
 
 #course {
@@ -121,4 +127,14 @@ td, th {
     margin: 0 auto;
     width: 95%;
     text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#course-label {
+    float: left;
 }

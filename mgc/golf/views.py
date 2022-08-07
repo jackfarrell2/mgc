@@ -67,38 +67,40 @@ def register(request):
 
 def post(request):
     """Allows the user to post a round or match. This route defaults to Manchester Country Club without altering the URL"""
+    if request.method == "POST":
+        return HttpResponseRedirect(reverse('index'))
+    else:
+        # Provide option drop down menu to switch course
+        courses = Course.objects.all()
+        course_names = []
+        for course in courses:
+            if course.name not in course_names:
+                course_names.append(course.name)
+        
+        # Get default course information (MCC)
+        default_course = Course.objects.get(pk=1)
 
-    # Provide option drop down menu to switch course
-    courses = Course.objects.all()
-    course_names = []
-    for course in courses:
-        if course.name not in course_names:
-            course_names.append(course.name)
-    
-    # Get default course information (MCC)
-    default_course = Course.objects.get(pk=1)
-
-    # Provide option drop down menu to switch tees
-    available_courses = Course.objects.filter(name=default_course.name)
-    available_tees = []
-    for i in range(len(available_courses)):
-        available_tees.append(available_courses[i].tees)
-    
-    # Get the hole information for this course
-    holes = Hole.objects.filter(course=default_course)
-    yardages = []
-    handicaps = []
-    pars = []
-    for i in range(len(holes)):
-        yardages.append(holes[i].yardage)
-        handicaps.append(holes[i].handicap)
-        pars.append(holes[i].par)
-    golfers = User.objects.exclude(pk=1) # Provide option drop down menu to switch golfer
-    # Create default date as a placeholder date
-    now = datetime.now()
-    date = now.strftime("%Y-%m-%d")
-    context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
-    return render(request, "golf/post.html", context)
+        # Provide option drop down menu to switch tees
+        available_courses = Course.objects.filter(name=default_course.name)
+        available_tees = []
+        for i in range(len(available_courses)):
+            available_tees.append(available_courses[i].tees)
+        
+        # Get the hole information for this course
+        holes = Hole.objects.filter(course=default_course)
+        yardages = []
+        handicaps = []
+        pars = []
+        for i in range(len(holes)):
+            yardages.append(holes[i].yardage)
+            handicaps.append(holes[i].handicap)
+            pars.append(holes[i].par)
+        golfers = User.objects.exclude(pk=1) # Provide option drop down menu to switch golfer
+        # Create default date as a placeholder date
+        now = datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
+        return render(request, "golf/post.html", context)
 
 
 def post_course(request, name):
@@ -122,40 +124,37 @@ def post_course(request, name):
 
 
 def post_tees(request, name, tees):
-    if request.method == "GET":
-        # Provide option to switch course
-        courses = Course.objects.all()
-        course_names = []
-        for course in courses:
-            if course.name not in course_names:
-                course_names.append(course.name)
-        index = course_names.index(f'{name}')
-        course_names.insert(0, course_names.pop(index)) # Default to the requested course
+    # Provide option to switch course
+    courses = Course.objects.all()
+    course_names = []
+    for course in courses:
+        if course.name not in course_names:
+            course_names.append(course.name)
+    index = course_names.index(f'{name}')
+    course_names.insert(0, course_names.pop(index)) # Default to the requested course
 
-        # Get selected course information
-        default_course = Course.objects.get(name=name, tees=tees)
-        
-        # Check if we need to give options for other tees at this course
-        available_courses = Course.objects.filter(name=name)
-        available_tees = []
-        for i in range(len(available_courses)):
-            available_tees.append(available_courses[i].tees)
-        index = available_tees.index(f'{tees}')
-        available_tees.insert(0, available_tees.pop(index)) # Default to requested tees
-        
-        holes = Hole.objects.filter(course=default_course)
-        yardages = []
-        handicaps = []
-        pars = []
-        for i in range(len(holes)):
-            yardages.append(holes[i].yardage)
-            handicaps.append(holes[i].handicap)
-            pars.append(holes[i].par)
-        golfers = User.objects.exclude(pk=1)
-        # Create default date as a placeholder date
-        now = datetime.now()
-        date = now.strftime("%Y-%m-%d")
-        context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
-        return render(request, "golf/post.html", context)
-    else:
-        pass
+    # Get selected course information
+    default_course = Course.objects.get(name=name, tees=tees)
+    
+    # Check if we need to give options for other tees at this course
+    available_courses = Course.objects.filter(name=name)
+    available_tees = []
+    for i in range(len(available_courses)):
+        available_tees.append(available_courses[i].tees)
+    index = available_tees.index(f'{tees}')
+    available_tees.insert(0, available_tees.pop(index)) # Default to requested tees
+    
+    holes = Hole.objects.filter(course=default_course)
+    yardages = []
+    handicaps = []
+    pars = []
+    for i in range(len(holes)):
+        yardages.append(holes[i].yardage)
+        handicaps.append(holes[i].handicap)
+        pars.append(holes[i].par)
+    golfers = User.objects.exclude(pk=1)
+    # Create default date as a placeholder date
+    now = datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
+    return render(request, "golf/post.html", context)

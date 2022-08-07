@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block main %}
-<form class="grid" action="{% url 'post' %}" method="post">
+<form class="grid" action="{% url 'post' %}" method="post" id="scorecard">
+    {% csrf_token %}
     <!-- Select a course and date -->
     <div id="general-info">
         <select name="course" id="course">
@@ -59,7 +60,7 @@
             <td></td>
         </tr>
         <!-- Scores -->
-        <tr class="scores-row">
+        <tr class="scores-row" id="strokes">
             <th class="scorecard-header">
                 <select name="golfer" id="golfer">
                     <option disabled selected>Golfer</option>
