@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
-from .models import User, Course, Hole
+from .models import User, Course, Hole, Score, Round
 
 # Create your views here.
 def index(request):
@@ -76,10 +76,37 @@ def post(request):
         else:
             # Check how many golfers were submitted
             golfer_count = 1
+            golfer_scores = []
             if len(request.POST) == 48: golfer_count = 2
             if len(request.POST) == 70: golfer_count = 3
             if len(request.POST) == 92: golfer_count = 4
-            return HttpResponseRedirect(reverse('index'))
+            for i in range(golfer_count):
+                golfer_score = []
+                golfer = request.POST[f'golfer_{i + 1}']
+                golfer_score.append(golfer)
+                for i in range(21):
+                    golfer_score.append(request.POST[f'{golfer}_{i + 1}'])
+                golfer_score.pop(10)
+                golfer_score.pop()
+                golfer_score.pop()
+                golfer_scores.append(golfer_score)
+            
+            # Create and store round information
+            for i in range(len(golfer_scores)):
+                golfer_name = golfer_scores[i][0]
+                golfer = User.objects.get(first_name=golfer_name)
+                course = Course.objects.get(name=request.POST['course'], tees=request.POST['tees'])
+                date = request.POST['round_date']
+                round = Round(golfer=golfer, course=course, date=date)
+                # round.save()
+                # Create and store each score
+                for j in range(1, len(golfer_scores[i])):
+                    score = int(golfer_scores[i][j])
+                    hole = Hole.objects.get(course=course, tee=j)
+                    this_score = Score(score=score, golfer=golfer, round=round, hole=hole)
+                    # this_score.save()
+
+                return HttpResponseRedirect(reverse('index'))
     else:
         # Provide option drop down menu to switch course
         courses = Course.objects.all()

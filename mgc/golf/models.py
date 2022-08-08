@@ -45,3 +45,12 @@ class Hole(models.Model):
 
     def __str__(self):
         return f"{self.tee} - {self.course}"
+
+class Score(models.Model):
+    score = models.IntegerField()
+    golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="golfers_scores")
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="round_scores")
+    hole = models.ForeignKey(Hole, on_delete=models.CASCADE, related_name="holes_scores")
+
+    def __str__(self):
+        return f"{self.score} - {self.hole}"

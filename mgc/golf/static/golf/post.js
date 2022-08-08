@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.replace(`${origin}/post/${course}/${tees}`);
     })
 
-    document.querySelector('#golfer').addEventListener('change', function() {
+    document.querySelector('#golfer').addEventListener('change', function () {
         let golfer = document.querySelector('#golfer').value;
         let all_golfers = document.getElementsByClassName('golfer');
         for (var i = 0; i < all_golfers.length; i++) {
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 new_golfer.children[0].children[0].children[i].disabled = true;
             }
         }
-        new_golfer.children[0].children[0].addEventListener('change', function() {
+        new_golfer.children[0].children[0].addEventListener('change', function () {
             let golfer = this.value;
             let all_golfers = document.getElementsByClassName('golfer');
             for (var i = 0; i < all_golfers.length; i++) {
@@ -79,25 +79,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
-        let scores = this.parentElement.parentElement;
-        for (var i = 0; i < scores.childElementCount; i++) {
-            if (i === 0) {
-                let rows = document.querySelector('#golfer').parentElement.parentElement.parentElement.childElementCount;
-                let golfer_count = rows - 4;
-                let this_card = document.getElementsByClassName('scorecard')[0];
-                for (var j = 0; j < golfer_count; j++) {
-                    if (this_card.rows[j + 3].children[0].children[0] === this) {
-                        scores.children[i].children[0].name = `golfer_${j + 1}`;
+            let scores = this.parentElement.parentElement;
+            for (var i = 0; i < scores.childElementCount; i++) {
+                if (i === 0) {
+                    let rows = document.querySelector('#golfer').parentElement.parentElement.parentElement.childElementCount;
+                    let golfer_count = rows - 4;
+                    let this_card = document.getElementsByClassName('scorecard')[0];
+                    for (var j = 0; j < golfer_count; j++) {
+                        if (this_card.rows[j + 3].children[0].children[0] === this) {
+                            scores.children[i].children[0].name = `golfer_${j + 1}`;
+                        }
                     }
+                } else {
+                    scores.children[i].children[0].name = `${golfer}_${i}`
                 }
-            } else {
-                scores.children[i].children[0].name = `${golfer}_${i}`
             }
-        }
-        
+
 
         })
-        
+
         let scorecard = document.querySelector('.scorecard');
         let par_row_index = document.getElementsByClassName('pars-row')[0].rowIndex;
         var new_row = scorecard.insertRow(par_row_index);
