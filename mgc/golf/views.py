@@ -68,7 +68,18 @@ def register(request):
 def post(request):
     """Allows the user to post a round or match. This route defaults to Manchester Country Club without altering the URL"""
     if request.method == "POST":
-        return HttpResponseRedirect(reverse('index'))
+        # Ensure user is logged in
+        if not request.user.is_authenticated:
+            return render(request, "golf/error.html", {'message': 'You must be logged in to post a match.'})
+        elif len(request.POST) not in [26, 48, 70, 92]:
+            return render(request, "golf/error.html", {'message': 'There was an error processing your request.'})
+        else:
+            # Check how many golfers were submitted
+            golfer_count = 1
+            if len(request.POST) == 48: golfer_count = 2
+            if len(request.POST) == 70: golfer_count = 3
+            if len(request.POST) == 92: golfer_count = 4
+            return HttpResponseRedirect(reverse('index'))
     else:
         # Provide option drop down menu to switch course
         courses = Course.objects.all()

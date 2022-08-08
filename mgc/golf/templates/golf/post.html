@@ -1,6 +1,8 @@
 {% extends "golf/layout.html" %}
 {% load static %}
 
+{% block title %}MGC: Post{% endblock %}
+
 {% block main %}
 <form class="grid" action="{% url 'post' %}" method="post" id="scorecard">
     {% csrf_token %}
@@ -62,7 +64,7 @@
         <!-- Scores -->
         <tr class="scores-row" id="strokes">
             <th class="scorecard-header">
-                <select name="golfer" id="golfer">
+                <select id="golfer" class="golfer">
                     <option disabled selected>Golfer</option>
                     {% for golfer in golfers %}
                     <option value="{{ golfer }}">{{ golfer }}</option>
