@@ -2,10 +2,12 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class User(AbstractUser):
+    """Golfer and Site User"""
     def __str__(self):
         return f"{self.first_name}"
 
 class Course(models.Model):
+    """Golf Course - Specific to tee"""
     name = models.CharField(max_length=50)
     WHITE = 'White'
     BLUE = 'Blue'
@@ -29,6 +31,7 @@ class Course(models.Model):
         return f"{self.name} - {self.tees}"
 
 class Round(models.Model):
+    """Golfers round information"""
     golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="users_rounds")
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     date = models.DateField()
@@ -37,6 +40,7 @@ class Round(models.Model):
         return f"{self.golfer} - {self.course} - {self.date}"
 
 class Hole(models.Model):
+    """Every hole for each course"""
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     tee = models.IntegerField()
     par = models.IntegerField()
@@ -47,6 +51,7 @@ class Hole(models.Model):
         return f"{self.tee} - {self.course}"
 
 class Score(models.Model):
+    """Golfers score on a single hole"""
     score = models.IntegerField()
     golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="golfers_scores")
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="round_scores")

@@ -10,5 +10,6 @@ urlpatterns = [
     path("post", views.post, name="post"),
     path("post/<str:name>", views.post_course, name="post_course"),
     path("post/<str:name>/<str:tees>", views.post_tees, name="post_tees"),   
+    path("new", views.new, name="new"),
 
 ]

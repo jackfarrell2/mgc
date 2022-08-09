@@ -80,6 +80,7 @@ def post(request):
             if len(request.POST) == 48: golfer_count = 2
             if len(request.POST) == 70: golfer_count = 3
             if len(request.POST) == 92: golfer_count = 4
+            # Parse all the scores
             for i in range(golfer_count):
                 golfer_score = []
                 golfer = request.POST[f'golfer_{i + 1}']
@@ -91,7 +92,7 @@ def post(request):
                 golfer_score.pop()
                 golfer_scores.append(golfer_score)
             
-            # Create and store round information
+            # Store round information
             for i in range(len(golfer_scores)):
                 golfer_name = golfer_scores[i][0]
                 golfer = User.objects.get(first_name=golfer_name)
@@ -99,14 +100,14 @@ def post(request):
                 date = request.POST['round_date']
                 round = Round(golfer=golfer, course=course, date=date)
                 # round.save()
-                # Create and store each score
+                # Store each score
                 for j in range(1, len(golfer_scores[i])):
                     score = int(golfer_scores[i][j])
                     hole = Hole.objects.get(course=course, tee=j)
                     this_score = Score(score=score, golfer=golfer, round=round, hole=hole)
                     # this_score.save()
 
-                return HttpResponseRedirect(reverse('index'))
+                return HttpResponseRedirect(reverse('index')) # Return to home page
     else:
         # Provide option drop down menu to switch course
         courses = Course.objects.all()
@@ -156,7 +157,7 @@ def post_course(request, name):
             if courses[i].tees == 'White':
                 url = reverse('post_tees', kwargs={'name': name, 'tees': 'White'})
                 return HttpResponseRedirect(url)
-        # Otherwise choose any non white tee
+        # Otherwise choose first non white tee
         url = reverse('post_tees', kwargs={'name': name, 'tees': courses[0].tees})
         return HttpResponseRedirect(url) 
 
@@ -182,6 +183,7 @@ def post_tees(request, name, tees):
     index = available_tees.index(f'{tees}')
     available_tees.insert(0, available_tees.pop(index)) # Default to requested tees
     
+    # Get the hole information for this course
     holes = Hole.objects.filter(course=default_course)
     yardages = []
     handicaps = []
@@ -196,3 +198,15 @@ def post_tees(request, name, tees):
     date = now.strftime("%Y-%m-%d")
     context = {"course_length": range(1, 10), "course_names": course_names, 'golfers': golfers, 'default_course': default_course,'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'available_tees': available_tees, 'date': date}
     return render(request, "golf/post.html", context)
+
+def new(request):
+    if request.method == "POST":
+        pass
+    else:
+        courses = Course.objects.all()
+        course_names = []
+        for course in courses:
+            if course.name not in course_names:
+                course_names.append(course.name)
+        
+        return render(request, "golf/new.html", {'course_names': course_names, "course_length": range(1, 10)})

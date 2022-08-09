@@ -1,0 +1,98 @@
+{% extends "golf/layout.html" %}
+{% load static %}
+
+{% block title %}MGC: New Course{% endblock %}
+
+{% block main %}
+
+<form class="grid" action="{% url 'new' %}" method="post" id="scorecard">
+    {% csrf_token %}
+    <!-- Ask if the course already exists -->
+    <div id="already_course" class="grid">
+        <label for="course_exists">If the course already exists, and you are just adding tees, please select the course
+            and tees
+            from the drop-down menus:</label>
+        <select name="course_exists" id="course_exists">
+            <option disabled selected>Course</option>
+            {% for course_name in course_names %}
+            <option value="{{ course_name }}">{{ course_name }}</option>
+            {% endfor %}
+        </select>
+        <select name="tees_course_exists" id="tees" class="tees" required>
+            <option disabled selected>Tees</option>
+            <option>White</option>
+            <option>Blue</option>
+            <option>Black</option>
+            <option>Red</option>
+        </select>
+        <label for="new_course_name">Otherwise, type in the name of the new course and select the tees below:</label>
+        <input type="text" name="new_course_name" id="new_course_name" placeholder="Course Name">
+        <select name="tees" id="tees" class="tees" required>
+            <option disabled selected>Tees</option>
+            <option>White</option>
+            <option>Blue</option>
+            <option>Black</option>
+            <option>Red</option>
+        </select>
+    </div>
+    <table class="scorecard">
+        <!-- Holes -->
+        <tr class="holes-row">
+            <th class="scorecard-header"><strong>Hole</strong></th>
+            {% for i in course_length %}
+            <td>{{ i }}</td>
+            {% endfor %}
+            <td>OUT</td>
+            {% for i in course_length %}
+            <td>{{ i|add:"9" }}</td>
+            {% endfor %}
+            <td>IN</td>
+            <td>TOT</td>
+        </tr>
+        <!-- Yardages -->
+        <tr class="yardages-row" id="yardages">
+            <th class="scorecard-header">Yardage</th>
+            {% for i in course_length %}
+            <td><input name="yardages_{{ i }}" type='number' min='50' max='999' required></td>
+            {% endfor %}
+            <td><input name="yardages_front" type='number' min='1000' max='5000' required></td>
+            {% for i in course_length %}
+            <td><input name="yardages_{{ i|add:'9' }}" type='number' min='50' max='999' required></td>
+            {% endfor %}
+            <td><input name="yardages_back" type='number' min='1000' max='5000' required></td>
+            <td><input name="yardages_total" type='number' min='1000' max='9999' required></td>
+        </tr>
+        <!-- Handicaps -->
+        <tr class="handicap-row">
+            <th class="scorecard-header">Handicap</th>
+            {% for i in course_length %}
+            <td><input name="handicap_{{ i }}" type='number' min='1' max='18' required></td>
+            {% endfor %}
+            <td></td>
+            {% for i in course_length %}
+            <td><input name="handicap_{{ i|add:'9' }}" type='number' min='1' max='18' required></td>
+            {% endfor %}
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- Pars -->
+        <tr class="pars-row">
+            <th class="scorecard-header">Par</th>
+            {% for i in course_length %}
+            <td><input name="par_{{ i }}" type='number' min='3' max='5' required></td>
+            {% endfor %}
+            <td><input name="par_front" type='number' min='30' max='80' required></td>
+            {% for i in course_length %}
+            <td><input name="par_{{ i|add:'9' }}" type='number' min='3' max='5' required></td>
+            {% endfor %}
+            <td><input name="par_back" type='number' min='30' max='80' required></td>
+            <td><input name="par_total" type='number' min='60' max='99' required></td>
+        </tr>
+    </table>
+    <input class="btn btn-success btn-med" id="new-course" type="submit" value="Add Course">
+
+    {% endblock %}
+
+    {% block script %}
+    <script src="{% static 'golf/new.js' %}"></script>
+    {% endblock %}

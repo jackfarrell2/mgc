@@ -116,11 +116,18 @@ th {
     font-size: 15px;
 }
 
-#post-match {
+#post-match,
+#new-course {
     margin: 0px;
-    float: right;
     background-color: #198754;
     border-color: #198754;
+}
+
+#add-course {
+    margin: 0px;
+    float: right;
+    height: 40px;
+    font-size: 15px;
 }
 
 #buttons {

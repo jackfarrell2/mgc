@@ -4,16 +4,18 @@
 {% block title %}MGC: Post{% endblock %}
 
 {% block main %}
-<form class="grid" action="{% url 'post' %}" method="post" id="scorecard">
+<form class="grid" action="{% url 'post' %}" method="post" id="scorecard" onSubmit="return validate();">
     {% csrf_token %}
     <!-- Select a course and date -->
     <div id="general-info">
+        <!-- Course -->
         <select name="course" id="course">
             {% for course_name in course_names %}
             <option value="{{ course_name }}">{{ course_name }}</option>
             {% endfor %}
         </select>
-        <input id="date" type="date" name="round_date" value="{{ date }}">
+        <!-- Date-->
+        <input id="date" type="date" name="round_date" value="{{ date }}" required>
     </div>
     <table class="scorecard">
         <!-- Holes -->
@@ -64,7 +66,7 @@
         <!-- Scores -->
         <tr class="scores-row" id="strokes">
             <th class="scorecard-header">
-                <select id="golfer" class="golfer">
+                <select id="golfer" class="golfer" required>
                     <option disabled selected>Golfer</option>
                     {% for golfer in golfers %}
                     <option value="{{ golfer }}">{{ golfer }}</option>
@@ -72,14 +74,14 @@
                 </select>
             </th>
             {% for i in course_length %}
-            <td><input type='number' min='1' max='9'></td>
+            <td><input type='number' min='1' max='9' required></td>
             {% endfor %}
-            <td><input type='number' min='9' max='100'></td>
+            <td><input type='number' min='9' max='100' required></td>
             {% for i in course_length %}
-            <td><input type='number' min='1' max='9'></td>
+            <td><input type='number' min='1' max='9' required></td>
             {% endfor %}
-            <td><input type='number' min='9' max='100'></td>
-            <td><input type='number' min='18' max='150'></td>
+            <td><input type='number' min='9' max='100' required></td>
+            <td><input type='number' min='18' max='150' required></td>
         </tr>
         <!-- Pars -->
         <tr class="pars-row">
@@ -95,10 +97,13 @@
             <td>{{ default_course.par }}</td>
         </tr>
     </table>
+    <!-- Buttons to add golfer, course, or tee -->
     <div id="buttons">
         <button class="btn btn-warning btn-med" id="add-golfer" type="button">Add Golfer</button>
-        <input class="btn btn-success btn-med" id="post-match" type="submit" value="Post Match">
+        <a href="{% url 'new' %}"><button class="btn btn-warning btn-med" id="add-course" type="button">Add a New Course
+                or Tee</button></a>
     </div>
+    <input class="btn btn-success btn-med" id="post-match" type="submit" value="Post Match">
 </form>
 
 {% endblock %}
