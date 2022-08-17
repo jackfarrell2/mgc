@@ -4,14 +4,20 @@
 {% block title %}MGC: New Course{% endblock %}
 
 {% block main %}
-
-<form class="grid" action="{% url 'new' %}" method="post" id="scorecard">
+<div class="grid">
+    <label for="new-course-or-tees">Please select if you are adding an entirely new course or just new tees:</label>
+    <div id="buttons">
+        <button class="btn btn-warning btn-med" id="new-course-or-tees-course" value="Entire New Course">New
+            Course</button>
+        <button class="btn btn-warning btn-med" id="new-course-or-tees-tees" value="Just New Tees">Just New
+            Tees</button>
+    </div>
+</div>
+<form class="grid" action="{% url 'new' %}" method="post" id="scorecard" onsubmit="return validateMyForm();">
     {% csrf_token %}
-    <!-- Ask if the course already exists -->
-    <div id="already_course" class="grid">
-        <label for="course_exists">If the course already exists, and you are just adding tees, please select the course
-            and tees
-            from the drop-down menus:</label>
+    <input type="hidden" id="course-or-tees" name="course-or-tees" value="null">
+    <div id="already_course" class="grid" style="display: none;">
+        <label for="course_exists">Please select the course and tees from the drop-down menus:</label>
         <select name="course_exists" id="course_exists">
             <option disabled selected>Course</option>
             {% for course_name in course_names %}
@@ -25,14 +31,15 @@
             <option>Black</option>
             <option>Red</option>
         </select>
-        <label for="new_course_name">Otherwise, type in the name of the new course and select the tees below:</label>
+    </div>
+    <div id="new_course" style="display: none;">
         <input type="text" name="new_course_name" id="new_course_name" placeholder="Course Name">
-        <select name="tees" id="tees" class="tees" required>
-            <option disabled selected>Tees</option>
-            <option>White</option>
-            <option>Blue</option>
-            <option>Black</option>
-            <option>Red</option>
+        <select name="new_tees" id="new_tees" class="tees" required>
+            <option disabled selected value="Tees">Tees</option>
+            <option value="White">White</option>
+            <option value="Blue">Blue</option>
+            <option value="Black">Black</option>
+            <option value="Red">Red</option>
         </select>
     </div>
     <table class="scorecard">
@@ -53,14 +60,17 @@
         <tr class="yardages-row" id="yardages">
             <th class="scorecard-header">Yardage</th>
             {% for i in course_length %}
-            <td><input name="yardages_{{ i }}" type='number' min='50' max='999' required></td>
+            <td><input class="new-yardages" name="yardages_{{ i }}" type='number' min='50' max='999' required></td>
             {% endfor %}
-            <td><input name="yardages_front" type='number' min='1000' max='5000' required></td>
+            <td><input class="new-yardages-long" name="yardages_front" type='number' min='1000' max='5000' required>
+            </td>
             {% for i in course_length %}
-            <td><input name="yardages_{{ i|add:'9' }}" type='number' min='50' max='999' required></td>
+            <td><input class="new-yardages" name="yardages_{{ i|add:'9' }}" type='number' min='50' max='999' required>
+            </td>
             {% endfor %}
-            <td><input name="yardages_back" type='number' min='1000' max='5000' required></td>
-            <td><input name="yardages_total" type='number' min='1000' max='9999' required></td>
+            <td><input class="new-yardages-long" name="yardages_back" type='number' min='1000' max='5000' required></td>
+            <td><input class="new-yardages-long" name="yardages_total" type='number' min='1000' max='9999' required>
+            </td>
         </tr>
         <!-- Handicaps -->
         <tr class="handicap-row">
@@ -90,9 +100,11 @@
         </tr>
     </table>
     <input class="btn btn-success btn-med" id="new-course" type="submit" value="Add Course">
+</form>
 
-    {% endblock %}
 
-    {% block script %}
-    <script src="{% static 'golf/new.js' %}"></script>
-    {% endblock %}
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'golf/new.js' %}"></script>
+{% endblock %}

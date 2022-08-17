@@ -201,6 +201,38 @@ def post_tees(request, name, tees):
 
 def new(request):
     if request.method == "POST":
+        # Store all course information
+        
+        # Store yardage information
+        yardages = []
+        for i in range(1, 19):
+            this_yardage = request.POST[f"yardages_{i}"]
+            yardages.append(this_yardage)
+        
+        # Store par information
+        pars = []
+        for i in range(1, 19):
+            this_par = request.POST[f"par_{i}"]
+            pars.append(this_par)
+        
+        # Store handicap information
+        handicaps = []
+        for i in range(1, 19):
+            this_handicap = request.POST[f"handicap_{i}"]
+            handicaps.append(this_handicap)
+        
+        # Check if the user is adding a new course or just a new tee option
+        # User is adding a new course
+        if request.POST['course-or-tees'] == 'Course':
+            # Check if the course name already exists
+            all_course = Course.objects.all()
+            pass
+        # User is just adding a new tee option
+        elif request.POST['course-or-tees'] == 'Tees':
+            pass
+        else:
+            # Return an error
+            pass
         pass
     else:
         courses = Course.objects.all()
