@@ -201,7 +201,8 @@ def post_tees(request, name, tees):
 
 def new(request):
     if request.method == "POST":
-        # Store all course information
+        # Verify and store all course information
+        # Verify valid slope and course rating input
         try:
             slope = int(request.POST['slope'])
         except:
@@ -222,8 +223,6 @@ def new(request):
             else:
                 if test_rating[i] != '.':
                     return render(request, "golf/error.html", {'message': 'Invalid Course Rating'})
-
-
         if rating < 60 or rating > 81:
             return render(request, "golf/error.html", {'message': 'Invalid Course Rating'})
 
@@ -231,34 +230,42 @@ def new(request):
         yardages = []
         for i in range(1, 19):
             this_yardage = int(request.POST[f"yardages_{i}"])
+            if this_yardage < 50 or this_yardage > 999:
+                return render(request, "golf/error.html", {'message': 'No hole should have a yardage less than 50 or greater than 999'})
             yardages.append(this_yardage)
-        # if sum(yardages[0:9]) != int(request.POST['yardages_front']):
-        #     return render(request, "golf/error.html", {'message': 'The front nine yardages do not add up to the front nine yardage total.'})
-        # elif sum(yardages[9:]) != int(request.POST['yardages_back']):
-        #     return render(request, "golf/error.html", {'message': 'The back nine yardages do not add up to the back nine yardage total.'})
-        # elif sum(yardages) != int(request.POST['yardages_total']):
-        #      return render(request, "golf/error.html", {'message': 'The yardages by hole do not add up to the yardage total.'})
+        # Verify math adds up
+        if sum(yardages[0:9]) != int(request.POST['yardages_front']):
+            return render(request, "golf/error.html", {'message': 'The front nine yardages do not add up to the front nine yardage total.'})
+        elif sum(yardages[9:]) != int(request.POST['yardages_back']):
+            return render(request, "golf/error.html", {'message': 'The back nine yardages do not add up to the back nine yardage total.'})
+        elif sum(yardages) != int(request.POST['yardages_total']):
+             return render(request, "golf/error.html", {'message': 'The yardages by hole do not add up to the yardage total.'})
 
         # Store par information
         pars = []
         for i in range(1, 19):
             this_par = int(request.POST[f"par_{i}"])
+            if this_par < 3 or this_par > 5:
+                return render(request, "golf/error.html", {'message': 'No hole should have a par less than 3 or greater than 5'})
             pars.append(this_par)
-        # if sum(pars[0:9]) != int(request.POST['par_front']):
-        #     return render(request, "golf/error.html", {'message': 'The front nine pars do not add up to the front nine par total.'})
-        # elif sum(pars[9:]) != int(request.POST['par_back']):
-        #     return render(request, "golf/error.html", {'message': 'The back nine pars do not add up to the back nine par total.'})
-        # elif sum(pars) != int(request.POST['par_total']):
-        #      return render(request, "golf/error.html", {'message': 'The pars by hole do not add up to the par total.'})
+        # Verify math adds up
+        if sum(pars[0:9]) != int(request.POST['par_front']):
+            return render(request, "golf/error.html", {'message': 'The front nine pars do not add up to the front nine par total.'})
+        elif sum(pars[9:]) != int(request.POST['par_back']):
+            return render(request, "golf/error.html", {'message': 'The back nine pars do not add up to the back nine par total.'})
+        elif sum(pars) != int(request.POST['par_total']):
+             return render(request, "golf/error.html", {'message': 'The pars by hole do not add up to the par total.'})
         
         # Store handicap information
         handicaps = []
         for i in range(1, 19):
             this_handicap = int(request.POST[f"handicap_{i}"])
+            if this_handicap < 1 or this_handicap > 18:
+                return render(request, "golf/error.html", {'message': 'No hole should have a handicap rating less than 1 or greater than 18'})
             handicaps.append(this_handicap)
         # Check if there are any duplicates
-        # if len(handicaps) != len(set(handicaps)):
-        #     return render(request, "golf/error.html", {'message': 'Multiple holes cannot have the same handicap.'})
+        if len(handicaps) != len(set(handicaps)):
+            return render(request, "golf/error.html", {'message': 'Multiple holes cannot have the same handicap.'})
         
         # Check if the user is adding a new course or just a new tee option
         # User is adding a new course
@@ -271,19 +278,31 @@ def new(request):
             
             # Add Course
             this_course = Course(name=request.POST['new_course_name'], tees=request.POST['new_tees'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating)
-            # this_course.save()
+            this_course.save()
             for i in range(18):
                 this_hole = Hole(course=this_course, tee=i+1, par=pars[i], yardage=yardages[i], handicap=handicaps[i])
-                # this_hole.save()
-            pass
+                this_hole.save()
+            return HttpResponseRedirect(reverse('index'))
         # User is just adding a new tee option
         elif request.POST['course-or-tees'] == 'Tees':
-            pass
+            # Check if tee option already exists for the selected course
+            all_courses = Course.objects.all()
+            for course in all_courses:
+                if course.name == request.POST['course_exists'] and course.tees == request.POST['tees_course_exists']:
+                    return render(request, "golf/error.html", {'message': 'This tee option already exists for the selected course.'})
+            
+            # Add Course
+            this_course = Course(name=request.POST['course_exists'], tees=request.POST['tees_course_exists'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating)
+            this_course.save()
+            for i in range(18):
+                this_hole = Hole(course=this_course, tee=i+1, par=pars[i], yardage=yardages[i], handicap=handicaps[i])
+                this_hole.save()
+            return HttpResponseRedirect(reverse('index'))
         else:
             # Return an error
-            pass
-        pass
+            return render(request, "golf/error.html", {'message': 'An unexpected error occured. Please try again.'})
     else:
+        # Display form
         courses = Course.objects.all()
         course_names = []
         for course in courses:

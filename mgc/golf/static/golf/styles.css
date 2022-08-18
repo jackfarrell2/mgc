@@ -162,3 +162,12 @@ input::-webkit-inner-spin-button {
     height: 40px;
     text-align: center;
 }
+
+.course-information {
+    margin: 10px;
+}
+
+.course-or-tees {
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}

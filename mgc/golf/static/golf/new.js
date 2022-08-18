@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Clear tee option when new course is selected
     document.querySelector('#new-course-or-tees-course').addEventListener('click', function () {
         document.querySelector('#already_course').style.display = "none";
         document.querySelector('#new_course').style.display = "none";
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return false;
     })
 
+    // Clear new course option when new tee is selected
     document.querySelector('#new-course-or-tees-tees').addEventListener('click', function () {
         document.querySelector('#already_course').style.display = "none";
         document.querySelector('#new_course').style.display = "none";
@@ -20,51 +22,63 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 })
 
+// Check user input
 function validateMyForm() {
     let already_course = document.querySelector('#already_course');
     let new_course = document.querySelector('#new_course');
+    // Check if the user selected new course or new tees
     if (already_course.style.display === 'none' && new_course.style.display === 'none') {
         alert("Please choose if you are adding an entirely new course or just new tees");
         return false;
-    }
-    if (already_course.style.display === 'none' && new_course.style.display === 'none') {
-        alert("Please choose if you are adding an entirely new course or just new tees");
-        return false;
-    } else if (already_course.style.display === 'none') {
+    } 
+    // Check if user selected entirely new course
+    else if (already_course.style.display === 'none') {
         let tees = document.querySelector('#new_tees');
         let course_name = document.querySelector('#new_course_name');
+        // Check if user selected a valid tee option
         if (tees.value === 'Tees') {
             alert("Please select an option for the tees.");
             return false;
-        } if (course_name.value === '') {
+        } 
+        // Check if user entered a valid course name
+        if (course_name.value === '') {
             alert("Please enter a course name.");
             return false;
-        }
-    } else if (new_course.style.display === 'none') {
+        } 
+    } 
+    // Check if user selected a new tee option
+    else if (new_course.style.display === 'none') {
         let tees = document.querySelector('#tees');
         let course_name = document.querySelector('#course_exists');
+        // Check if user selected a valid tee option
         if (tees.value === 'Tees') {
             alert("Please select an option for the tees.");
             return false;
-        } if (course_name.value === 'Course') {
+        } 
+        // Check if user selected a valid course name
+        if (course_name.value === 'Course') {
             alert("Please select an option for the course name.");
             return false;
         }
     }
 
+    // Check if all the numbers on the scorecard add up
     let yardage_row = document.getElementsByClassName('yardages-row')[0];
     let par_row = document.getElementsByClassName('pars-row')[0];
     let handicap_row = document.getElementsByClassName('handicap-row')[0];
     let yardages = [];
     let pars = [];
     let handicaps = [];
+    // Populate yardages, pars, and handicaps the user entered
     for (let i = 0; i < yardage_row.childElementCount; i++) {
+        // Only on the rows of the scorecard that matter
         if (i != 0 && i != 10 && i != 20 && i != 21) {
             yardages.push(yardage_row.children[i].children[0].value);
             pars.push(par_row.children[i].children[0].value);
             handicaps.push(handicap_row.children[i].children[0].value);
         }
     }
+    // Check the users math
     let front_nine_sum_yardages = 0;
     let back_nine_sum_yardages = 0;
     let total_sum_yardages = 0;
@@ -92,33 +106,43 @@ function validateMyForm() {
     let back_nine_par_given = par_row.children[20].children[0].value;
     let total_par_given = par_row.children[21].children[0].value;
 
-
-    // if (front_nine_sum_yardages != front_nine_yardage_given) {
-    //     alert("The front nine yardages do not add up to the front nine yardage total.");
-    //     return false;
-    // } else if (back_nine_sum_yardages != back_nine_yardage_given) {
-    //     alert("The back nine yardages do not add up to the back nine yardage total.");
-    //     return false;
-    // } else if (total_sum_yardages != total_yardage_given) {
-    //     alert("The yardages by hole do not add up to the yardage total.");
-    //     return false;
-    // } else if (front_nine_sum_pars != front_nine_par_given) {
-    //     alert("The front nine pars do not add up to the front nine par total.");
-    //     return false;
-    // } else if (back_nine_sum_pars != back_nine_par_given) {
-    //     alert("The back nine pars do not add up to the back nine par total.");
-    //     return false;
-    // } else if (total_sum_pars != total_par_given) {
-    //     alert("The pars by hole do not add up to the par total.");
-    //     return false;
-    // } 
-
-    // let handicap_set = new Set(handicaps);
-    // if (handicap_set.size != handicaps.length) {
-    //     alert("Each hole must have a unique handicap.");
-    //     return false;
-    // }
-
+    // Front nine yardage does not add up
+    if (front_nine_sum_yardages != front_nine_yardage_given) {
+        alert("The front nine yardages do not add up to the front nine yardage total.");
+        return false;
+    } 
+    // Back nine yardage does not add up
+    else if (back_nine_sum_yardages != back_nine_yardage_given) {
+        alert("The back nine yardages do not add up to the back nine yardage total.");
+        return false;
+    } 
+    // Total yardage does not add up
+    else if (total_sum_yardages != total_yardage_given) {
+        alert("The yardages by hole do not add up to the yardage total.");
+        return false;
+    } 
+    // Front nine pars do not add up
+    else if (front_nine_sum_pars != front_nine_par_given) {
+        alert("The front nine pars do not add up to the front nine par total.");
+        return false;
+    } 
+    // Back nine pars do not add up
+    else if (back_nine_sum_pars != back_nine_par_given) {
+        alert("The back nine pars do not add up to the back nine par total.");
+        return false;
+    } 
+    // Total pars do not add up
+    else if (total_sum_pars != total_par_given) {
+        alert("The pars by hole do not add up to the par total.");
+        return false;
+    } 
+    // Check handicap row does not have duplicates
+    let handicap_set = new Set(handicaps);
+    if (handicap_set.size != handicaps.length) {
+        alert("Each hole must have a unique handicap.");
+        return false;
+    }
+    // Check user inputted valid slope and course rating
     let slope = parseInt(document.querySelector('#slope').value);
     let rating = document.querySelector('#rating').value;
     if (isNaN(slope)) {
@@ -139,9 +163,4 @@ function validateMyForm() {
             return false;
         }
     }
-
-
-
-    
-
 }

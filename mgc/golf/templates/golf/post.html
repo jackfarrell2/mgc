@@ -4,7 +4,7 @@
 {% block title %}MGC: Post{% endblock %}
 
 {% block main %}
-<form class="grid" action="{% url 'post' %}" method="post" id="scorecard" onSubmit="return validate();">
+<form class="grid" action="{% url 'post' %}" method="post" id="scorecard" onsubmit="return validate();">
     {% csrf_token %}
     <!-- Select a course and date -->
     <div id="general-info">

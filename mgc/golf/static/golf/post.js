@@ -124,11 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     })
-
 })
 
-// Ensure all golfers have been selected
+// Validate user data
 function validate() {
+    // Ensure all golfers have been selected
     let scorecard = document.getElementsByClassName('scorecard')[0];
     let rows = scorecard.children[0].rows
     let golfer_count = rows.length - 4;
@@ -138,6 +138,43 @@ function validate() {
             return false;
         }
     }
+    // Ensure all the math adds up for each golfer
+    for (let i = 0; i < golfer_count; i++) {
+        let golfer_name = golfer_row.children[0].children[0].value;
+        let golfer_scores = [];
+        let golfer_row = rows[i + 3];
+        for (let i = 0; i < golfer_row.childElementCount; i++) {
+            // Only on the rows of the scorecard that matter
+            if (i != 0 && i != 10 && i != 20 && i != 21) {
+                golfer_scores.push(golfer_row.children[i].children[0].value);
+            }
+        }
+        let front_nine_sum = 0;
+        let back_nine_sum = 0;
+        let total_sum = 0;
+        for (let i = 0; i < 18; i++) {
+            if (i < 9) {
+                front_nine_sum += parseInt(golfer_scores[i]);
+                total_sum += parseInt(golfer_scores[i]);
+            }
+            else {
+                back_nine_sum += parseInt(golfers_scores[i]);
+                total_sum += parseInt(golfer_scores[i]);
+            }
+        }
 
-    return true;
+        if (front_nine_sum != parseInt(golfer_row.children[10].children[0].value)) {
+            alert(`${golfer_name}'s front nine scores do not add up to the front nine total.`);
+            return false;
+        }
+        else if (back_nine_sum != parseInt(golfer_row.children[20].children[0].value)) {
+            alert(`${golfer_name}'s back nine scores do not add up to the back nine total.`);
+            return false;
+        }
+        else if (total_sum != parseInt(golfer_row.children[21].children[0].value)) {
+            alert(`${golfer_name}'s scores do not add up to the total`);
+            return false;
+        }
+    }
+
 }
