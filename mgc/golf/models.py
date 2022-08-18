@@ -20,6 +20,8 @@ class Course(models.Model):
         (BLACK, 'Black')
     ]
     tees = models.CharField(max_length=6, choices=TEE_CHOICES, default=WHITE)
+    course_rating = models.DecimalField(max_digits=3, decimal_places=1)
+    slope = models.IntegerField()
     front_par = models.IntegerField()
     back_par = models.IntegerField()
     par = models.IntegerField()
