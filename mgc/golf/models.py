@@ -37,9 +37,11 @@ class Round(models.Model):
     golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="users_rounds")
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     date = models.DateField()
+    match = models.IntegerField(default=0)
+
 
     def __str__(self):
-        return f"{self.golfer} - {self.course} - {self.date}"
+        return f"{self.golfer} - {self.course} - {self.match} - {self.date}"
 
 class Hole(models.Model):
     """Every hole for each course"""
@@ -60,4 +62,4 @@ class Score(models.Model):
     hole = models.ForeignKey(Hole, on_delete=models.CASCADE, related_name="holes_scores")
 
     def __str__(self):
-        return f"{self.score} - {self.hole}"
+        return f"{self.golfer}: {self.score} - {self.hole}"

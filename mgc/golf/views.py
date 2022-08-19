@@ -74,7 +74,61 @@ def post(request):
         elif len(request.POST) not in [26, 48, 70, 92]:
             return render(request, "golf/error.html", {'message': 'There was an error processing your request.'})
         else:
-            post_match(request)
+            golfer_count = 1
+            golfer_scores = []
+            if len(request.POST) == 48: golfer_count = 2
+            if len(request.POST) == 70: golfer_count = 3
+            if len(request.POST) == 92: golfer_count = 4
+            # Parse all the scores
+            for i in range(golfer_count):
+                golfer_score = []
+                golfer = request.POST[f'golfer_{i + 1}']
+                if golfer == 'Golfer':
+                    return render(request, "golf/error.html", {'message': 'A golfer name was not selected.'})
+                golfer_score.append(golfer)
+                for i in range(21):
+                    # Ensure user submitted a valid integer
+                    try:
+                        this_score = int(request.POST[f'{golfer}_{i + 1}'])
+                    except:
+                        return render(request, "golf/error.html", {'message': 'All scores entered should be single numbers.'})
+                    golfer_score.append(this_score)
+                if sum(golfer_score[1:10]) != golfer_score[10]:
+                    return render(request, "golf/error.html", {'message': f"{golfer}'s front nine scores do not add up."})
+                elif sum(golfer_score[11:20]) != golfer_score[20]:
+                    return render(request, "golf/error.html", {'message': f"{golfer}'s back nine scores do not add up."})
+                golfer_score.pop(10)
+                golfer_score.pop()
+                golfer_score.pop()
+                golfer_scores.append(golfer_score)
+
+                # Ensure all scores are between 1 and 9
+                for i in range(len(golfer_score)):
+                    if i != 0:
+                        if golfer_score[i] < 1 or golfer_score[i] > 9:
+                            return render(request, "golf/error.html", {'message': f"{golfer} has a hole score less than 1 or greater than 9"})
+            # Store round information
+            match = 0 # Default to match 0 for solo rounds
+            # Create new match id
+            if golfer_count != 1:
+                highest_matches = Round.objects.all().order_by('-match').values()
+                highest_match = highest_matches[0]['match']
+                match = highest_match + 1
+            for i in range(len(golfer_scores)):
+                golfer_name = golfer_scores[i][0]
+                golfer = User.objects.get(first_name=golfer_name)
+                course = Course.objects.get(name=request.POST['course'], tees=request.POST['tees'])
+                date = request.POST['round_date']
+                round = Round(golfer=golfer, course=course, date=date, match=match)
+                round.save()
+                # Store each score
+                for j in range(1, len(golfer_scores[i])):
+                    score = int(golfer_scores[i][j])
+                    hole = Hole.objects.get(course=course, tee=j)
+                    this_score = Score(score=score, golfer=golfer, round=round, hole=hole)
+                    this_score.save()
+
+            return HttpResponseRedirect(reverse('index')) # Return to home page
     else:
         # Provide a form to post a match
         # Provide option drop down menu to switch course
@@ -279,39 +333,3 @@ def new(request):
         
         return render(request, "golf/new.html", {'course_names': course_names, "course_length": range(1, 10)})
     
-
-def post_match(request):
-# Check how many golfers were submitted
-        golfer_count = 1
-        golfer_scores = []
-        if len(request.POST) == 48: golfer_count = 2
-        if len(request.POST) == 70: golfer_count = 3
-        if len(request.POST) == 92: golfer_count = 4
-        # Parse all the scores
-        for i in range(golfer_count):
-            golfer_score = []
-            golfer = request.POST[f'golfer_{i + 1}']
-            golfer_score.append(golfer)
-            for i in range(21):
-                golfer_score.append(request.POST[f'{golfer}_{i + 1}'])
-            golfer_score.pop(10)
-            golfer_score.pop()
-            golfer_score.pop()
-            golfer_scores.append(golfer_score)
-        
-        # Store round information
-        for i in range(len(golfer_scores)):
-            golfer_name = golfer_scores[i][0]
-            golfer = User.objects.get(first_name=golfer_name)
-            course = Course.objects.get(name=request.POST['course'], tees=request.POST['tees'])
-            date = request.POST['round_date']
-            round = Round(golfer=golfer, course=course, date=date)
-            # round.save()
-            # Store each score
-            for j in range(1, len(golfer_scores[i])):
-                score = int(golfer_scores[i][j])
-                hole = Hole.objects.get(course=course, tee=j)
-                this_score = Score(score=score, golfer=golfer, round=round, hole=hole)
-                # this_score.save()
-
-            return HttpResponseRedirect(reverse('index')) # Return to home page
