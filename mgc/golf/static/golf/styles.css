@@ -171,3 +171,32 @@ input::-webkit-inner-spin-button {
     margin-bottom: 0px;
     padding-bottom: 0px;
 }
+
+td.triple-bogey-or-worse {
+    background-color: #caadc5;
+    text-align: center;
+}
+
+td.birdie-or-better {
+    background-color: #95ef86;
+    text-align: center;
+}
+
+td.par {
+    background-color: #fceb9e;
+    text-align: center;
+}
+
+td.double-bogey {
+    background-color: #ff8f8f;
+    text-align: center;
+}
+
+td.bogey {
+    text-align: center;
+}
+
+.handwritten-score {
+    font-family: ink free;
+    font-weight: semibold;
+}

@@ -332,4 +332,62 @@ def new(request):
                 course_names.append(course.name)
         
         return render(request, "golf/new.html", {'course_names': course_names, "course_length": range(1, 10)})
-    
+
+def golfer(request, golfer):
+    scorecards = []
+    this_golfer = User.objects.get(first_name=golfer)
+    golfer_rounds = Round.objects.filter(golfer=this_golfer)
+    for this_round in golfer_rounds:
+        handicaps = []
+        pars = []
+        strokes = []
+        to_pars = []
+        hole_scores = []
+        yardages = []
+        course = this_round.course
+        holes = Hole.objects.filter(course=course).order_by('tee')
+        scores = Score.objects.filter(round=this_round)
+        for i in range(len(holes)):
+            yardages.append(holes[i].yardage)
+            handicaps.append(holes[i].handicap)
+            pars.append(holes[i].par)
+            strokes.append(scores[i].score)
+            hole_scores.append(scores[i].score - holes[i].par)
+        par_tracker = 0 
+        for i in range(9):
+            to_this_par = strokes[i] - pars[i]
+            if to_this_par == 0:
+                to_pars.append(par_shift(par_tracker))
+            else:
+                par_tracker += to_this_par
+                to_pars.append(par_shift(par_tracker))
+        par_tracker = 0 
+        for i in range(9):
+            to_this_par = strokes[i + 9] - pars[i + 9]
+            if to_this_par == 0:
+                to_pars.append(par_shift(par_tracker))
+            else:
+                par_tracker += to_this_par
+                to_pars.append(par_shift(par_tracker))
+
+        front_nine_to_par = par_shift(sum(strokes[:9]) - sum(pars[:9]))
+        back_nine_to_par = par_shift(sum(strokes[9:]) - sum(pars[9:])) 
+        total_to_par = par_shift(sum(strokes) - sum(pars))  
+        to_pars.append(back_nine_to_par)
+        to_pars.append(total_to_par) 
+        to_pars.insert(9, front_nine_to_par) 
+        strokes.append(sum(strokes[9:]))
+        strokes.append(sum(strokes[:-1]))
+        strokes.insert(9, sum(strokes[:9]))
+        hole_scores.append('NA')
+        hole_scores.append('NA')
+        hole_scores.insert(9, 'NA')
+        zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
+        scorecard = {'round': this_round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+        scorecards.append(scorecard)
+    return render(request, "golf/golfer.html", {'scorecards': scorecards, 'golfer': this_golfer, 'course_length': range(1, 10)})
+
+def par_shift(score):
+    if score >= 1: return f"+{score}"
+    elif score == 0: return "E"
+    else: return str(score)
