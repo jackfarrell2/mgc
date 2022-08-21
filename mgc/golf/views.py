@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import MAX_EMAX
 from re import M
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -376,7 +377,6 @@ def golfer(request, golfer):
             else:
                 par_tracker += to_this_par
                 to_pars.append(par_shift(par_tracker))
-
         front_nine_to_par = par_shift(sum(strokes[:9]) - sum(pars[:9]))
         back_nine_to_par = par_shift(sum(strokes[9:]) - sum(pars[9:])) 
         total_to_par = par_shift(sum(strokes) - sum(pars))  
@@ -405,10 +405,10 @@ def get_stats(golfer):
     rounds = len(golfer_rounds)
     golfer_holes = []
     difference = 0
+    score_tracker = {'eagle_counter': 0, 'birdie_counter': 0, 'par_counter': 0, 'bogey_counter': 0, 'double_bogey_counter': 0, 'triple_bogey_counter': 0, 'max_counter': 0, 'best_score': 300, 'par_three_counter': 0, 'par_four_counter': 0, 'par_five_counter': 0, 'par_three_sum': 0, 'par_four_sum': 0, 'par_five_sum': 0}
     for round in golfer_rounds:
         round_holes = Score.objects.filter(round=round)
         golfer_holes.append(round_holes)
-    score_tracker = {'eagle_counter': 0, 'birdie_counter': 0, 'par_counter': 0, 'bogey_counter': 0, 'double_bogey_counter': 0, 'triple_bogey_counter': 0, 'max_counter': 0, 'best_score': 300}
     for i in range(len(golfer_holes)):
         round_score = 0
         for j in range(len(golfer_holes[i])):
@@ -421,10 +421,19 @@ def get_stats(golfer):
             if difference == 2: score_tracker['double_bogey_counter'] += 1
             if difference == 3: score_tracker['triple_bogey_counter'] += 1
             if difference > 3: score_tracker['max_counter'] += 1
+            if golfer_holes[i][j].hole.par == 3: 
+                score_tracker['par_three_counter'] += 1
+                score_tracker['par_three_sum'] += difference
+            elif golfer_holes[i][j].hole.par == 4:
+                score_tracker['par_four_counter'] += 1
+                score_tracker['par_four_sum'] += difference
+            else:
+                score_tracker['par_five_counter'] += 1
+                score_tracker['par_five_sum'] += difference
         if round_score < score_tracker['best_score']: 
             round_score = par_shift(round_score + 72)
             score_tracker['best_score'] = round_score
-
+    best_score = score_tracker['best_score']
     avg_par = difference / rounds
     avg_score = avg_par + 72
     avg_par = par_shift(avg_par)
@@ -435,8 +444,10 @@ def get_stats(golfer):
     doubles_per = score_tracker['double_bogey_counter'] / round_score
     triples_per = score_tracker['triple_bogey_counter'] / round_score
     maxes_per = score_tracker['max_counter'] / round_score
-    # par_3_avg = 
-    # par_4_avg =
-    # par_5_avg = 
+    par_three_average = score_tracker['par_three_sum'] / score_tracker['par_three_counter']
+    par_four_average = score_tracker['par_four_sum'] / score_tracker['par_four_counter']
+    par_five_average = score_tracker['par_five_sum'] / score_tracker['par_five_counter']
+    
+    golfer_stats = [golfer, avg_score, avg_par, best_score, eagles, birdies_per, pars_per, bogeys_per, doubles_per, triples_per, maxes_per, par_three_average, par_four_average, par_five_average]
 
-    return 1
+    return golfer_stats
