@@ -4,17 +4,43 @@
 {% block title %}MGC: {{ golfer }}{% endblock %}
 
 {% block main %}
+<div class="grid">
+    <div id="choose-golfer" class="choose-golfer">
+        <label for="golfer-name">Golfer: </label>&nbsp
+        <select name="golfer-name" id="golfer-name">
+            {% for golfer in all_golfers %}
+            <option value="{{ golfer }}">{{ golfer }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<table id="stats" class="table table-bordered standings">
+    <thead class="success">
+        <tr class="stats-header">
+            <td class="stat">Golfer</td>
+            <td class="stat">Rounds</td>
+            <td class="stat">Avg Score</td>
+            <td class="stat">Avg Par</td>
+            <td class="stat">Best Score</td>
+            <td class="stat">Birdies Per</td>
+            <td class="stat">Pars Per</td>
+            <td class="stat">Bogeys Per</td>
+            <td class="stat">Doubles Per</td>
+            <td class="stat">Triples Per</td>
+            <td class="stat">Maxes Per</td>
+            <td class="stat">Par 3 Avg</td>
+            <td class="stat">Par 4 Avg</td>
+            <td class="stat">Par 5 Avg</td>
+            <td class="stat"><img src="{% static 'golf/eagle.png' %}" alt="eagle" width=35 height=35></td>
+        </tr>
+    </thead>
+    <tr>
+        {% for stat in stats %}
+        <td class="stat">{{ stat }}</td>
+        {% endfor %}
+    </tr>
+</table>
 <div id="content" class="container-sm">
-    <div class="grid">
-        <div id="choose-golfer" class="choose-golfer">
-            <label for="golfer-name">Select a golfer: </label>&nbsp
-            <select name="golfer-name" id="golfer-name">
-                {% for golfer in all_golfers %}
-                <option value="{{ golfer }}">{{ golfer }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>  
     {% for scorecard in scorecards %}
     <div id="scorecard" class="scorecard-view">
         <p class="scorecard-course-name">{{ scorecard.round.course }}</p>

@@ -223,4 +223,37 @@ td.bogey {
 
 #golfer-name {
     float: right;
+    padding-right: 5px;
+    margin-bottom: 8px;
+}
+
+.standings tr:nth-of-type(even) {
+    background-color: #f2f2f2;
+}
+
+.stats-header {
+    color: black;
+    background-color: #198754;
+    font-weight: 500;
+    text-align: center;
+    border-bottom: 3px solid black;
+}
+
+td.stat {
+    text-align: center;
+    padding: 8px;
+}
+
+#choose-golfer {
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+.golfer-row {
+    cursor: pointer;
+    cursor: hand;
+}
+
+#stats {
+    padding: 25px;
 }

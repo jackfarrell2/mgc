@@ -30,7 +30,7 @@ class Course(models.Model):
     yardage = models.IntegerField()
 
     def __str__(self):
-        return f"{self.name} - {self.tees}"
+        return f"{self.name}"
 
 class Round(models.Model):
     """Golfers round information"""
