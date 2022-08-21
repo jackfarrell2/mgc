@@ -29,6 +29,16 @@ li .nav-item {
 
 }
 
+.scorecard-view {
+    margin: 0 auto;
+    width: 900px;
+    font-size: medium;
+    text-align: center;
+    padding-top: 30px;
+    padding-bottom: 15px;
+    border-bottom: #cac2c2 1px solid;
+}
+
 .holes-row {
     color: white;
     background-color: black;
@@ -199,4 +209,18 @@ td.bogey {
 .handwritten-score {
     font-family: ink free;
     font-weight: semibold;
+}
+
+.scorecard-course-name {
+    margin: 0px;
+    float: left;
+}
+
+.scorecard-course-date {
+    margin: 0px;
+    float: right;
+}
+
+#golfer-name {
+    float: right;
 }

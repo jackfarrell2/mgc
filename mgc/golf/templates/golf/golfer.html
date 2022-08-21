@@ -4,89 +4,103 @@
 {% block title %}MGC: {{ golfer }}{% endblock %}
 
 {% block main %}
-
-{% for scorecard in scorecards %}
-
-<div id="scorecard" class="scorecard">
-    <p class="scorecard-course-name">{{ scorecard.round.course }}</p>
-    <p class="scorecard-course-date">{{ scorecard.round.date }}</p>
-    <table class="table table-sm table-bordered">
-        <!-- Holes -->
-        <tr class="holes-row">
-            <th class="scorecard-header">Hole</th>
-            {% for i in course_length %}
-            <th>{{ i }}</th>
-            {% endfor %}
-            <th>OUT</th>
-            {% for i in course_length %}
-            <th>{{ i|add:"9" }}</th>
-            {% endfor %}
-            <th>IN</th>
-            <th>TOT</th>
-        </tr>
-        <!-- Yardages -->
-        <tr class="yardages-row">
-            <td class="scorecard-header">{{ scorecard.course.tees }}</td>
-            {% for yard in scorecard.yardages|slice:"0:9" %}
-            <td>{{ yard }}</td>
-            {% endfor %}
-            <td>{{ scorecard.course.front_yardage }}</td>
-            {% for yard in scorecard.yardages|slice:"9:" %}
-            <td>{{ yard }}</td>
-            {% endfor %}
-            <td>{{ scorecard.course.back_yardage }}</td>
-            <td>{{ scorecard.course.yardage }}</td>
-        </tr>
-        <!-- Handicaps -->
-        <tr class="handicap-row">
-            <td class="scorecard-header">Handicap</td>
-            {% for handicap in scorecard.handicaps|slice:":9" %}
-            <td>{{ handicap }}</td>
-            {% endfor %}
-            <td></td>
-            {% for handicap in scorecard.handicaps|slice:"9:" %}
-            <td>{{ handicap }}</td>
-            {% endfor %}
-            <td></td>
-            <td></td>
-        </tr>
-        <!-- Strokes -->
-        <tr class="handwritten-score">
-            <td class="scorecard-header">{{ golfer }}</td>
-            {% for stroke, score in scorecard.zipped_scores %}
-            {% if score >= 3 %}
-            <td class="triple-bogey-or-worse">{{ stroke }}</td>
-            {% elif score == 2 %}
-            <td class="double-bogey">{{ stroke }}</td>
-            {% elif score == 0 %}
-            <td class="par">{{ stroke }}</td>
-            {% elif score < 0 %} <td class="birdie-or-better">{{ stroke }}</td>
-                {% else %}
-                <td class="bogey">{{ stroke }}</td>
-                {% endif %}
+<div id="content" class="container-sm">
+    <div class="grid">
+        <div id="choose-golfer" class="choose-golfer">
+            <label for="golfer-name">Select a golfer: </label>&nbsp
+            <select name="golfer-name" id="golfer-name">
+                {% for golfer in all_golfers %}
+                <option value="{{ golfer }}">{{ golfer }}</option>
                 {% endfor %}
-        </tr>
-        <!-- To-pars -->
-        <tr>
-            <td class="scorecard-header">+/-</td>
-            {% for par in scorecard.to_pars %}
-            <td class="handwritten-score bogey">{{ par }}</td>
-            {% endfor %}
-        </tr>
-        <!-- Pars -->
-        <tr class="holes-row">
-            <td class="scorecard-header">Par</td>
-            {% for par in scorecard.pars|slice:":9" %}
-            <td>{{ par }}</td>
-            {% endfor %}
-            <td>{{ scorecard.course.front_par }}</td>
-            {% for par in scorecard.pars|slice:"9:" %}
-            <td>{{ par }}</td>
-            {% endfor %}
-            <td>{{ scorecard.course.back_par }}</td>
-            <td>{{ scorecard.course.par }}</td>
-        </tr>
-    </table>
+            </select>
+        </div>
+    </div>  
+    {% for scorecard in scorecards %}
+    <div id="scorecard" class="scorecard-view">
+        <p class="scorecard-course-name">{{ scorecard.round.course }}</p>
+        <p class="scorecard-course-date">{{ scorecard.round.date }}</p>
+        <table class="table table-sm table-bordered">
+            <!-- Holes -->
+            <tr class="holes-row">
+                <th class="scorecard-header">Hole</th>
+                {% for i in course_length %}
+                <th>{{ i }}</th>
+                {% endfor %}
+                <th>OUT</th>
+                {% for i in course_length %}
+                <th>{{ i|add:"9" }}</th>
+                {% endfor %}
+                <th>IN</th>
+                <th>TOT</th>
+            </tr>
+            <!-- Yardages -->
+            <tr class="yardages-row">
+                <td class="scorecard-header">{{ scorecard.course.tees }}</td>
+                {% for yard in scorecard.yardages|slice:"0:9" %}
+                <td>{{ yard }}</td>
+                {% endfor %}
+                <td>{{ scorecard.course.front_yardage }}</td>
+                {% for yard in scorecard.yardages|slice:"9:" %}
+                <td>{{ yard }}</td>
+                {% endfor %}
+                <td>{{ scorecard.course.back_yardage }}</td>
+                <td>{{ scorecard.course.yardage }}</td>
+            </tr>
+            <!-- Handicaps -->
+            <tr class="handicap-row">
+                <td class="scorecard-header">Handicap</td>
+                {% for handicap in scorecard.handicaps|slice:":9" %}
+                <td>{{ handicap }}</td>
+                {% endfor %}
+                <td></td>
+                {% for handicap in scorecard.handicaps|slice:"9:" %}
+                <td>{{ handicap }}</td>
+                {% endfor %}
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- Strokes -->
+            <tr class="handwritten-score">
+                <td class="scorecard-header">{{ golfer }}</td>
+                {% for stroke, score in scorecard.zipped_scores %}
+                {% if score >= 3 %}
+                <td class="triple-bogey-or-worse">{{ stroke }}</td>
+                {% elif score == 2 %}
+                <td class="double-bogey">{{ stroke }}</td>
+                {% elif score == 0 %}
+                <td class="par">{{ stroke }}</td>
+                {% elif score < 0 %} <td class="birdie-or-better">{{ stroke }}</td>
+                    {% else %}
+                    <td class="bogey">{{ stroke }}</td>
+                    {% endif %}
+                    {% endfor %}
+            </tr>
+            <!-- To-pars -->
+            <tr>
+                <td class="scorecard-header">+/-</td>
+                {% for par in scorecard.to_pars %}
+                <td class="handwritten-score bogey">{{ par }}</td>
+                {% endfor %}
+            </tr>
+            <!-- Pars -->
+            <tr class="holes-row">
+                <td class="scorecard-header">Par</td>
+                {% for par in scorecard.pars|slice:":9" %}
+                <td>{{ par }}</td>
+                {% endfor %}
+                <td>{{ scorecard.course.front_par }}</td>
+                {% for par in scorecard.pars|slice:"9:" %}
+                <td>{{ par }}</td>
+                {% endfor %}
+                <td>{{ scorecard.course.back_par }}</td>
+                <td>{{ scorecard.course.par }}</td>
+            </tr>
+        </table>
+    </div>
 </div>
 {% endfor %}
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'golf/golfer.js' %}"></script>
 {% endblock %}

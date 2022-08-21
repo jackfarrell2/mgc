@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import M
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -334,7 +335,13 @@ def new(request):
         return render(request, "golf/new.html", {'course_names': course_names, "course_length": range(1, 10)})
 
 def golfer(request, golfer):
+    stats = get_stats(golfer)
     scorecards = []
+    all_golfers = []
+    all_rounds = Round.objects.all()
+    for round in all_rounds:
+        if round.golfer not in all_golfers:
+            all_golfers.append(round.golfer)
     this_golfer = User.objects.get(first_name=golfer)
     golfer_rounds = Round.objects.filter(golfer=this_golfer)
     for this_round in golfer_rounds:
@@ -385,9 +392,51 @@ def golfer(request, golfer):
         zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
         scorecard = {'round': this_round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
         scorecards.append(scorecard)
-    return render(request, "golf/golfer.html", {'scorecards': scorecards, 'golfer': this_golfer, 'course_length': range(1, 10)})
+    return render(request, "golf/golfer.html", {'scorecards': scorecards, 'golfer': this_golfer, 'course_length': range(1, 10), 'all_golfers': all_golfers})
 
 def par_shift(score):
     if score >= 1: return f"+{score}"
     elif score == 0: return "E"
     else: return str(score)
+
+def get_stats(golfer):
+    golfer = User.objects.get(first_name=golfer)
+    golfer_rounds = Round.objects.filter(golfer=golfer)
+    rounds = len(golfer_rounds)
+    golfer_holes = []
+    difference = 0
+    for round in golfer_rounds:
+        round_holes = Score.objects.filter(round=round)
+        golfer_holes.append(round_holes)
+    score_tracker = {'eagle_counter': 0, 'birdie_counter': 0, 'par_counter': 0, 'bogey_counter': 0, 'double_bogey_counter': 0, 'triple_bogey_counter': 0, 'max_counter': 0, 'best_score': 300}
+    for i in range(len(golfer_holes)):
+        round_score = 0
+        for j in range(len(golfer_holes[i])):
+            difference += golfer_holes[i][j].score - golfer_holes[i][j].hole.par
+            round_score += golfer_holes[i][j].score - golfer_holes[i][j].hole.par
+            if difference <= -2: score_tracker['eagle_counter'] += 1
+            if difference == -1: score_tracker['birdie_counter'] += 1
+            if difference == 0: score_tracker['par_counter'] += 1
+            if difference == 1: score_tracker['bogey_counter'] += 1
+            if difference == 2: score_tracker['double_bogey_counter'] += 1
+            if difference == 3: score_tracker['triple_bogey_counter'] += 1
+            if difference > 3: score_tracker['max_counter'] += 1
+        if round_score < score_tracker['best_score']: 
+            round_score = par_shift(round_score + 72)
+            score_tracker['best_score'] = round_score
+
+    avg_par = difference / rounds
+    avg_score = avg_par + 72
+    avg_par = par_shift(avg_par)
+    eagles = score_tracker['eagle_counter']
+    birdies_per = score_tracker['birdie_counter'] / rounds
+    pars_per = score_tracker['par_counter'] / rounds
+    bogeys_per = score_tracker['bogey_counter'] / rounds
+    doubles_per = score_tracker['double_bogey_counter'] / round_score
+    triples_per = score_tracker['triple_bogey_counter'] / round_score
+    maxes_per = score_tracker['max_counter'] / round_score
+    # par_3_avg = 
+    # par_4_avg =
+    # par_5_avg = 
+
+    return 1
