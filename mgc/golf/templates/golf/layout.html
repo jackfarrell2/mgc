@@ -25,7 +25,7 @@
             <div>
                 <ul class="navbar-nav me-auto mt-2">
                     <li class="nav-item"><a class="nav-link" href="{% url 'golfer' 'Jack' %}">Golfers </a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Holes </a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'course' 'Manchester Country Club' 'White' 'Jack' %}">Courses </a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Vs </a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'post' %}">Post a Match </a></li>
                     {% if not user.is_authenticated %}

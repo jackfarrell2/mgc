@@ -256,4 +256,15 @@ td.stat {
 
 #stats {
     padding: 25px;
+    width: 75%;
+}
+
+#content {
+    margin: 20px;
+}
+
+#course-selector {
+    border: solid gray 1px;
+    padding: 5px;
+    margin: 20px;
 }

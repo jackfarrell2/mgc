@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import MAX_EMAX
 from re import M
+from select import select
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -348,7 +349,7 @@ def new(request):
         return render(request, "golf/new.html", {'course_names': course_names, "course_length": range(1, 10)})
 
 def golfer(request, golfer):
-    stats = get_stats(golfer)
+    stats = get_stats(golfer, True)
     scorecards = []
     all_golfers = []
     all_rounds = Round.objects.all()
@@ -358,62 +359,146 @@ def golfer(request, golfer):
     this_golfer = User.objects.get(first_name=golfer)
     golfer_rounds = Round.objects.filter(golfer=this_golfer)
     for this_round in golfer_rounds:
-        handicaps = []
-        pars = []
-        strokes = []
-        to_pars = []
-        hole_scores = []
-        yardages = []
-        course = this_round.course
-        holes = Hole.objects.filter(course=course).order_by('tee')
-        scores = Score.objects.filter(round=this_round)
-        for i in range(len(holes)):
-            yardages.append(holes[i].yardage)
-            handicaps.append(holes[i].handicap)
-            pars.append(holes[i].par)
-            strokes.append(scores[i].score)
-            hole_scores.append(scores[i].score - holes[i].par)
-        par_tracker = 0 
-        for i in range(9):
-            to_this_par = strokes[i] - pars[i]
-            if to_this_par == 0:
-                to_pars.append(par_shift(par_tracker))
-            else:
-                par_tracker += to_this_par
-                to_pars.append(par_shift(par_tracker))
-        par_tracker = 0 
-        for i in range(9):
-            to_this_par = strokes[i + 9] - pars[i + 9]
-            if to_this_par == 0:
-                to_pars.append(par_shift(par_tracker))
-            else:
-                par_tracker += to_this_par
-                to_pars.append(par_shift(par_tracker))
-        front_nine_to_par = par_shift(sum(strokes[:9]) - sum(pars[:9]))
-        back_nine_to_par = par_shift(sum(strokes[9:]) - sum(pars[9:])) 
-        total_to_par = par_shift(sum(strokes) - sum(pars))  
-        to_pars.append(back_nine_to_par)
-        to_pars.append(total_to_par) 
-        to_pars.insert(9, front_nine_to_par) 
-        strokes.append(sum(strokes[9:]))
-        strokes.append(sum(strokes[:-1]))
-        strokes.insert(9, sum(strokes[:9]))
-        hole_scores.append('NA')
-        hole_scores.append('NA')
-        hole_scores.insert(9, 'NA')
-        zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
-        scorecard = {'round': this_round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+        scorecard = get_scorecard(this_round)
         scorecards.append(scorecard)
     return render(request, "golf/golfer.html", {'stats': stats, 'scorecards': scorecards, 'golfer': this_golfer, 'course_length': range(1, 10), 'all_golfers': all_golfers})
+
+# def get_course_avg_scorecard(strokes, course):
+#     handicaps = []
+#     pars = []
+#     to_pars = []
+#     hole_scores = []
+#     yardages = []
+#     holes = Hole.objects.filter(course=course).order_by('tee')
+#     for i in range(len(holes)):
+#         yardages.append(holes[i].yardage)
+#         handicaps.append(holes[i].handicap)
+#         pars.append(holes[i].par)
+#     par_tracker = 0
+#     for i in range(9):
+#         to_this_par = strokes[i] - pars[i]
+#         if to_this_par == 0:
+#             to_pars.append(par_shift(par_tracker))
+#         else:
+#             par_tracker += to_this_par
+#             to_pars.append(par_shift(par_tracker))
+#         par_tracker = 0
+#         for i in range(9):
+#             to_this_par = strokes[i + 9] - pars[i + 9]
+#             if to_this_par == 0:
+#                 to_pars.append(par_shift(par_tracker))
+#             else:
+#                 par_tracker += to_this_par
+#                 to_pars.append(par_shift(par_tracker))
+#         front_nine_to_par = par_shift(sum(strokes[:9]) - sum(pars[:9]))
+#         back_nine_to_par = par_shift(sum(strokes[9:]) - sum(pars[9:])) 
+#         total_to_par = par_shift(sum(strokes) - sum(pars))
+#         to_pars.append(back_nine_to_par)
+#         to_pars.append(total_to_par) 
+#         to_pars.insert(9, front_nine_to_par) 
+#         strokes.append(sum(strokes[9:]))
+#         strokes.append(sum(strokes[:-1]))
+#         strokes.insert(9, sum(strokes[:9]))
+#         hole_scores.append('NA')
+#         hole_scores.append('NA')
+#         hole_scores.insert(9, 'NA')
+#         zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
+#         scorecard = {'round': round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+#         return scorecard
+
+
+def get_scorecard(round):
+    handicaps = []
+    pars = []
+    strokes = []
+    to_pars = []
+    hole_scores = []
+    yardages = []
+    course = round.course
+    holes = Hole.objects.filter(course=course).order_by('tee')
+    scores = Score.objects.filter(round=round)
+    for i in range(len(holes)):
+        yardages.append(holes[i].yardage)
+        handicaps.append(holes[i].handicap)
+        pars.append(holes[i].par)
+        strokes.append(scores[i].score)
+        hole_scores.append(scores[i].score - holes[i].par)
+    par_tracker = 0 
+    for i in range(9):
+        to_this_par = strokes[i] - pars[i]
+        if to_this_par == 0:
+            to_pars.append(par_shift(par_tracker))
+        else:
+            par_tracker += to_this_par
+            to_pars.append(par_shift(par_tracker))
+    par_tracker = 0 
+    for i in range(9):
+        to_this_par = strokes[i + 9] - pars[i + 9]
+        if to_this_par == 0:
+            to_pars.append(par_shift(par_tracker))
+        else:
+            par_tracker += to_this_par
+            to_pars.append(par_shift(par_tracker))
+    front_nine_to_par = par_shift(sum(strokes[:9]) - sum(pars[:9]))
+    back_nine_to_par = par_shift(sum(strokes[9:]) - sum(pars[9:])) 
+    total_to_par = par_shift(sum(strokes) - sum(pars))  
+    to_pars.append(back_nine_to_par)
+    to_pars.append(total_to_par) 
+    to_pars.insert(9, front_nine_to_par) 
+    strokes.append(sum(strokes[9:]))
+    strokes.append(sum(strokes[:-1]))
+    strokes.insert(9, sum(strokes[:9]))
+    hole_scores.append('NA')
+    hole_scores.append('NA')
+    hole_scores.insert(9, 'NA')
+    zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
+    scorecard = {'round': round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+    return scorecard
+
+def course(request, course, tees, golfer):
+    all_golfers = User.objects.all()
+    courses = Course.objects.all()
+    course_names = []
+    for each_course in courses:
+        if each_course.name not in course_names:
+            course_names.append(each_course.name)
+    selected_course_index = course_names.index(course)
+    if selected_course_index != 0: course_names.insert(0, course_names.pop(selected_course_index))
+    tee_options = []
+    duplicate_courses = Course.objects.filter(name=course)
+    for course in duplicate_courses:
+        tee_options.append(course.tees)
+    selected_tee_index = tee_options.index(tees)
+    if selected_tee_index != 0: tee_options.insert(0, tee_options.pop(selected_tee_index))
+    course = Course.objects.get(name=course, tees=tees)
+    golfer = User.objects.get(first_name=golfer)
+    rounds = Round.objects.filter(golfer=golfer, course=course)
+    if len(rounds) == 0:
+        return render(request, "golf/error.html", {'message': 'The selected golfer has not played the selected course'})
+    
+    # avg_scorecard = get_course_avg_scorecard(averages)
+    scorecards = []
+    for round in rounds:
+        scorecard = get_scorecard(round)
+        scorecards.append(scorecard)
+    stats = get_stats(golfer, True, {'one_course': True, 'course': course})
+    return render(request, "golf/course.html", {'stats': stats, 'scorecards': scorecards, 'courses': course_names, 'tees': tee_options, 'golfer': golfer, 'course_length': range(1, 10), 'all_golfers': all_golfers})
+
 
 def par_shift(score):
     if score >= 1: return f"+{score}"
     elif score == 0: return "E"
     else: return str(score)
 
-def get_stats(golfer):
+def get_stats(golfer, include_solo=False, course={'one_course': False, 'course': ''}):
     golfer = User.objects.get(first_name=golfer)
-    golfer_rounds = Round.objects.filter(golfer=golfer)
+    if course['one_course']:
+        golfer_rounds = Round.objects.filter(golfer=golfer, course=course['course'])
+    else:
+        if include_solo:
+            golfer_rounds = Round.objects.filter(golfer=golfer)
+        else:
+            golfer_rounds = Round.objects.filter(golfer=golfer).exclude(match=0)
     rounds = len(golfer_rounds)
     total_scores = 0
     score_tracker = {'eagle_counter': 0, 'birdie_counter': 0, 'par_counter': 0, 'bogey_counter': 0, 'double_bogey_counter': 0, 'triple_bogey_counter': 0, 'max_counter': 0, 'best_score': 300, 'par_three_counter': 0, 'par_four_counter': 0, 'par_five_counter': 0, 'par_three_sum': 0, 'par_four_sum': 0, 'par_five_sum': 0}
@@ -445,8 +530,8 @@ def get_stats(golfer):
     best_score = score_tracker['best_score'] + 72
     best_score_to_par = par_shift(score_tracker['best_score'])
     best_score = f"{best_score_to_par} ({best_score})"
-    avg_par = total_scores / rounds
-    avg_score = avg_par + 72
+    avg_par = round(total_scores / rounds, 2)
+    avg_score = round(avg_par + 72, 2)
     avg_par = par_shift(avg_par)
     eagles = score_tracker['eagle_counter']
     birdies_per = round(score_tracker['birdie_counter'] / rounds, 2)
@@ -454,7 +539,7 @@ def get_stats(golfer):
     bogeys_per = round(score_tracker['bogey_counter'] / rounds, 2)
     doubles_per = round(score_tracker['double_bogey_counter'] / rounds, 2)
     triples_per = round(score_tracker['triple_bogey_counter'] / rounds, 2)
-    maxes_per = score_tracker['max_counter'] / rounds
+    maxes_per = round(score_tracker['max_counter'] / rounds, 2)
     par_three_average = round((score_tracker['par_three_sum'] / score_tracker['par_three_counter']) + 3, 2)
     par_four_average = round((score_tracker['par_four_sum'] / score_tracker['par_four_counter']) + 4, 2)
     par_five_average = round((score_tracker['par_five_sum'] / score_tracker['par_five_counter']) + 5, 2)

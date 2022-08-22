@@ -2,8 +2,7 @@
 {% load static %}
 {% block title %}MGC: Standings{% endblock %}
 {% block main %}
-<div class="container-fluid py-5 text-center">
-    <div id="content" class="container-sm">
+    <div id="content" class="grid container-fluid">
         <table id="stats" class="table table-bordered table-hover standings">
             <thead class="success">
                 <tr class="stats-header">
@@ -32,6 +31,5 @@
             </tr>
             {% endfor %}
         </table>
-    </div>
 </div>
 {% endblock %}
