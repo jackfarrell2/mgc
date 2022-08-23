@@ -35,12 +35,12 @@
         </tr>
     </thead>
     <tr>
-        {% for stat in golfer_one_stats %}
+        {% for stat in stats_one %}
         <td class="stat">{{ stat }}</td>
         {% endfor %}
     </tr>
     <tr>
-        {% for stat in golfer_two_stats %}
+        {% for stat in stats_two %}
         <td class="stat">{{ stat }}</td>
         {% endfor %}
     </tr>
@@ -92,7 +92,7 @@
             </tr>
             <!-- Strokes One -->
             <tr class="handwritten-score">
-                <td class="scorecard-header">Golfer One</td>
+                <td class="scorecard-header">{{ golfer_one.first_name }}</td>
                 {% for stroke, score in scorecard.zipped_scores_one %}
                 {% if score >= 3 %}
                 <td class="triple-bogey-or-worse">{{ stroke }}</td>
@@ -115,7 +115,7 @@
             </tr>
             <!-- Strokes Two -->
             <tr class="handwritten-score">
-                <td class="scorecard-header">Golfer Two</td>
+                <td class="scorecard-header">{{ golfer_two.first_name }}</td>
                 {% for stroke, score in scorecard.zipped_scores_two %}
                 {% if score >= 3 %}
                 <td class="triple-bogey-or-worse">{{ stroke }}</td>
