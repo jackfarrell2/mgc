@@ -1,3 +1,4 @@
+from cgitb import handler
 from django.urls import path
 from . import views
 
@@ -13,5 +14,6 @@ urlpatterns = [
     path("golfer/<str:golfer>", views.golfer, name="golfer"),
     path("courses/<str:course>/<str:tees>/<str:golfer>", views.course, name="course"),
     path("vs/<str:golfer1>/<str:golfer2>", views.vs, name="vs")
-
 ]
+
+

@@ -28,6 +28,7 @@ class Course(models.Model):
     front_yardage = models.IntegerField()
     back_yardage = models.IntegerField()
     yardage = models.IntegerField()
+    abbreviation = models.CharField(max_length=10)
 
     def __str__(self):
         return f"{self.name}"

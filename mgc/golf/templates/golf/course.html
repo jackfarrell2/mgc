@@ -1,7 +1,7 @@
 {% extends "golf/layout.html" %}
 {% load static %}
 
-{% block title %}MGC: {{ golfer }}{% endblock %}
+{% block title %}MGC: {{ golfer }} - {{ scorecards.0.course.abbreviation }}{% endblock %}
 
 {% block main %}
 <div id="course-selector" class="container-sm">
@@ -63,83 +63,83 @@
     </table>
 </div>
 <div id="averages" class="averages">
-        <table class="table table-sm table-bordered">
-            <!-- Holes -->
-            <tr class="holes-row">
-                <th class="scorecard-header">Hole</th>
-                {% for i in course_length %}
-                <th>{{ i }}</th>
+    <table class="table table-sm table-bordered">
+        <!-- Holes -->
+        <tr class="holes-row">
+            <th class="scorecard-header">Hole</th>
+            {% for i in course_length %}
+            <th>{{ i }}</th>
+            {% endfor %}
+            <th>OUT</th>
+            {% for i in course_length %}
+            <th>{{ i|add:"9" }}</th>
+            {% endfor %}
+            <th>IN</th>
+            <th>TOT</th>
+        </tr>
+        <!-- Yardages -->
+        <tr class="yardages-row">
+            <td class="scorecard-header">{{ avg_scorecard.course.tees }}</td>
+            {% for yard in avg_scorecard.yardages|slice:"0:9" %}
+            <td>{{ yard }}</td>
+            {% endfor %}
+            <td>{{ avg_scorecard.course.front_yardage }}</td>
+            {% for yard in avg_scorecard.yardages|slice:"9:" %}
+            <td>{{ yard }}</td>
+            {% endfor %}
+            <td>{{ avg_scorecard.course.back_yardage }}</td>
+            <td>{{ avg_scorecard.course.yardage }}</td>
+        </tr>
+        <!-- Handicaps -->
+        <tr class="handicap-row">
+            <td class="scorecard-header">Handicap</td>
+            {% for handicap in avg_scorecard.handicaps|slice:":9" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            {% for handicap in avg_scorecard.handicaps|slice:"9:" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- Strokes -->
+        <tr class="handwritten-score">
+            <td class="scorecard-header">{{ golfer }}</td>
+            {% for stroke, score in avg_scorecard.zipped_scores %}
+            {% if score >= 3 %}
+            <td class="triple-bogey-or-worse">{{ stroke }}</td>
+            {% elif score == 2 %}
+            <td class="double-bogey">{{ stroke }}</td>
+            {% elif score == 0 %}
+            <td class="par">{{ stroke }}</td>
+            {% elif score < 0 %} <td class="birdie-or-better">{{ stroke }}</td>
+                {% else %}
+                <td class="bogey">{{ stroke }}</td>
+                {% endif %}
                 {% endfor %}
-                <th>OUT</th>
-                {% for i in course_length %}
-                <th>{{ i|add:"9" }}</th>
-                {% endfor %}
-                <th>IN</th>
-                <th>TOT</th>
-            </tr>
-            <!-- Yardages -->
-            <tr class="yardages-row">
-                <td class="scorecard-header">{{ avg_scorecard.course.tees }}</td>
-                {% for yard in avg_scorecard.yardages|slice:"0:9" %}
-                <td>{{ yard }}</td>
-                {% endfor %}
-                <td>{{ avg_scorecard.course.front_yardage }}</td>
-                {% for yard in avg_scorecard.yardages|slice:"9:" %}
-                <td>{{ yard }}</td>
-                {% endfor %}
-                <td>{{ avg_scorecard.course.back_yardage }}</td>
-                <td>{{ avg_scorecard.course.yardage }}</td>
-            </tr>
-            <!-- Handicaps -->
-            <tr class="handicap-row">
-                <td class="scorecard-header">Handicap</td>
-                {% for handicap in avg_scorecard.handicaps|slice:":9" %}
-                <td>{{ handicap }}</td>
-                {% endfor %}
-                <td></td>
-                {% for handicap in avg_scorecard.handicaps|slice:"9:" %}
-                <td>{{ handicap }}</td>
-                {% endfor %}
-                <td></td>
-                <td></td>
-            </tr>
-            <!-- Strokes -->
-            <tr class="handwritten-score">
-                <td class="scorecard-header">{{ golfer }}</td>
-                {% for stroke, score in avg_scorecard.zipped_scores %}
-                {% if score >= 3 %}
-                <td class="triple-bogey-or-worse">{{ stroke }}</td>
-                {% elif score == 2 %}
-                <td class="double-bogey">{{ stroke }}</td>
-                {% elif score == 0 %}
-                <td class="par">{{ stroke }}</td>
-                {% elif score < 0 %} <td class="birdie-or-better">{{ stroke }}</td>
-                    {% else %}
-                    <td class="bogey">{{ stroke }}</td>
-                    {% endif %}
-                    {% endfor %}
-            </tr>
-            <!-- To-pars -->
-            <tr>
-                <td class="scorecard-header">+/-</td>
-                {% for par in avg_scorecard.to_pars %}
-                <td class="handwritten-score bogey">{{ par }}</td>
-                {% endfor %}
-            </tr>
-            <!-- Pars -->
-            <tr class="holes-row">
-                <td class="scorecard-header">Par</td>
-                {% for par in avg_scorecard.pars|slice:":9" %}
-                <td>{{ par }}</td>
-                {% endfor %}
-                <td>{{ avg_scorecard.course.front_par }}</td>
-                {% for par in avg_scorecard.pars|slice:"9:" %}
-                <td>{{ par }}</td>
-                {% endfor %}
-                <td>{{ avg_scorecard.course.back_par }}</td>
-                <td>{{ avg_scorecard.course.par }}</td>
-            </tr>
-        </table>
+        </tr>
+        <!-- To-pars -->
+        <tr>
+            <td class="scorecard-header">+/-</td>
+            {% for par in avg_scorecard.to_pars %}
+            <td class="handwritten-score bogey">{{ par }}</td>
+            {% endfor %}
+        </tr>
+        <!-- Pars -->
+        <tr class="holes-row">
+            <td class="scorecard-header">Par</td>
+            {% for par in avg_scorecard.pars|slice:":9" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ avg_scorecard.course.front_par }}</td>
+            {% for par in avg_scorecard.pars|slice:"9:" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ avg_scorecard.course.back_par }}</td>
+            <td>{{ avg_scorecard.course.par }}</td>
+        </tr>
+    </table>
 </div>
 {% for scorecard in scorecards %}
 <div id="scorecard" class="scorecard-view" style="display: none;">

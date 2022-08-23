@@ -316,7 +316,8 @@ def new(request):
                     return render(request, "golf/error.html", {'message': 'A course with this name already exists.'})
             
             # Add Course
-            this_course = Course(name=request.POST['new_course_name'], tees=request.POST['new_tees'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating)
+            course_abbreviation = course_abbreviate(request.POST['new_course_name'])
+            this_course = Course(name=request.POST['new_course_name'], tees=request.POST['new_tees'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating, abbreviation=course_abbreviation)
             this_course.save()
             for i in range(18):
                 this_hole = Hole(course=this_course, tee=i+1, par=pars[i], yardage=yardages[i], handicap=handicaps[i])
@@ -331,7 +332,8 @@ def new(request):
                     return render(request, "golf/error.html", {'message': 'This tee option already exists for the selected course.'})
             
             # Add Course
-            this_course = Course(name=request.POST['course_exists'], tees=request.POST['tees_course_exists'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating)
+            course_abbreviation = course_abbreviate(request.POST['new_course_name'])
+            this_course = Course(name=request.POST['course_exists'], tees=request.POST['tees_course_exists'], front_par=int(request.POST['par_front']), back_par=int(request.POST['par_back']), par=int(request.POST['par_total']), front_yardage=int(request.POST['yardages_front']), back_yardage=int(request.POST['yardages_back']), yardage=int(request.POST['yardages_total']), slope=slope, course_rating=rating, abbreviation=course_abbreviation)
             this_course.save()
             for i in range(18):
                 this_hole = Hole(course=this_course, tee=i+1, par=pars[i], yardage=yardages[i], handicap=handicaps[i])
@@ -352,7 +354,7 @@ def new(request):
 
 def golfer(request, golfer):
     this_golfer = User.objects.get(first_name=golfer)
-    golfer_rounds = Round.objects.filter(golfer=this_golfer)
+    golfer_rounds = Round.objects.filter(golfer=this_golfer).order_by('-date')
     stats = get_stats(golfer_rounds)
     scorecards = []
     all_golfers = []
@@ -441,14 +443,34 @@ def vs(request, golfer1, golfer2):
     cumulative_match_ids = []
     for id in golfer_one_match_ids:
         if id in golfer_two_match_ids: cumulative_match_ids.append(id)
-    golfer_one_rounds = Round.objects.filter(golfer=golfer_one, match__in=cumulative_match_ids)
-    golfer_two_rounds = Round.objects.filter(golfer=golfer_two, match__in=cumulative_match_ids)
+    golfer_one_rounds = Round.objects.filter(golfer=golfer_one, match__in=cumulative_match_ids).order_by('-date')
+    golfer_two_rounds = Round.objects.filter(golfer=golfer_two, match__in=cumulative_match_ids).order_by('-date')
+    if len(golfer_one_rounds) == 0:
+        return render(request, "golf/error.html", {'message': 'The selected golfers have not played each other.'})
     golfer_one_stats = get_stats(golfer_one_rounds)
     golfer_two_stats = get_stats(golfer_two_rounds)
     both_golfers_rounds = [golfer_one_rounds, golfer_two_rounds]
     scorecards = get_vs_scorecards(both_golfers_rounds)
-
-    return render(request, "golf/vs.html", {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats, 'scorecards': scorecards, 'course_length': range(1, 10), 'all_golfers': all_golfers, 'golfer_one': golfer_one, 'golfer_two': golfer_two})
+    if golfer_one_stats[2] > golfer_two_stats[2]:
+        buffer = golfer_one_stats
+        golfer_one_stats = golfer_two_stats
+        golfer_two_stats = buffer
+    
+    match_checker = {'golfer_one_wins': 0, 'golfer_two_wins': 0, 'ties': 0}
+    for scorecard in scorecards:
+        if scorecard['strokes_one'][-1] > scorecard['strokes_two'][-1]:
+            match_checker['golfer_one_wins'] += 1
+        elif scorecard['strokes_one'][-1] < scorecard['strokes_two'][-1]:
+            match_checker['golfer_two_wins'] += 1
+        else:
+            match_checker['ties'] += 1
+    
+    if match_checker['golfer_one_wins'] >= match_checker['golfer_two_wins']:
+        record = f"{golfer_one} is {match_checker['golfer_one_wins']}-{match_checker['golfer_two_wins']}-{match_checker['ties']} vs {golfer_two}"
+    else:
+        record = f"{golfer_two} is {match_checker['golfer_two_wins']}-{match_checker['golfer_one_wins']}-{match_checker['ties']} vs {golfer_one}"
+ 
+    return render(request, "golf/vs.html", {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats, 'scorecards': scorecards, 'course_length': range(1, 10), 'all_golfers': all_golfers, 'golfer_one': golfer_one, 'golfer_two': golfer_two, 'record': record})
 
 def get_vs_scorecards(golfer_rounds):
     scorecards = []
@@ -601,7 +623,7 @@ def course(request, course, tees, golfer):
     if selected_tee_index != 0: tee_options.insert(0, tee_options.pop(selected_tee_index))
     course = Course.objects.get(name=course, tees=tees)
     golfer = User.objects.get(first_name=golfer)
-    rounds = Round.objects.filter(golfer=golfer, course=course)
+    rounds = Round.objects.filter(golfer=golfer, course=course).order_by('-date')
     if len(rounds) == 0:
         return render(request, "golf/error.html", {'message': 'The selected golfer has not played the selected course'})
     
@@ -669,3 +691,14 @@ def get_stats(rounds):
     golfer_stats = [golfer, round_amount, avg_score, avg_par, best_score, birdies_per, pars_per, bogeys_per, doubles_per, triples_per, maxes_per, par_three_average, par_four_average, par_five_average, eagles]
 
     return golfer_stats
+
+def course_abbreviate(course_name):
+    abbreviation = course_name[0]
+    for i in range(1, len(course_name)):
+        if course_name[i - 1] == ' ':
+            abbreviation += course_name[i]
+    abbreviation = abbreviation.upper()
+    return abbreviation
+
+def page_not_found_view(request, exception):
+    return render(request, "golf/error.html", {'message': 'Page Not Found'})

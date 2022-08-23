@@ -20,3 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('golf.urls'))
 ]
+
+handler404 = 'golf.views.page_not_found_view'

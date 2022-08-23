@@ -1,19 +1,29 @@
 {% extends "golf/layout.html" %}
 {% load static %}
 
-{% block title %}MGC: Vs{% endblock %}
+{% block title %}MGC: {{ golfer_one }} Vs {{ golfer_two}} {% endblock %}
 
 {% block main %}
-<div class="grid">
-    <div id="choose-golfer" class="choose-golfer">
-        <label for="golfer-name">Golfer: </label>&nbsp
-        <select name="golfer-name" id="golfer-name">
-            {% for golfer in all_golfers %}
-            <option value="{{ golfer }}">{{ golfer }}</option>
-            {% endfor %}
-        </select>
+<div id="vs-selector" class="container-sm">
+    <div class="grid">
+        <div>
+            <label for="golfer-name-one" id="golfer-label">Golfer One: </label>
+            <select name="golfer-name-one" id="golfer-name-one">
+                {% for golfer in all_golfers %}
+                <option value="{{ golfer }}">{{ golfer }}</option>
+                {% endfor %}
+            </select>
+            <label for="golfer-name-two" id="golfer-label">Golfer Two: </label>
+            <select name="golfer-name-two" id="golfer-name-two">
+                {% for golfer in all_golfers %}
+                <option value="{{ golfer }}">{{ golfer }}</option>
+                {% endfor %}
+            </select>
+            <button id="vs-submit-button" type="submit" class="btn btn-success btn-med">Submit</button>
+        </div>
     </div>
 </div>
+<p><strong>{{ record }}</strong></p>
 <table id="stats" class="table table-bordered standings">
     <thead class="success">
         <tr class="stats-header">
@@ -91,7 +101,7 @@
                 <td></td>
             </tr>
             <!-- Strokes One -->
-            <tr class="handwritten-score">
+            <tr class="handwritten-score strokes">
                 <td class="scorecard-header">{{ golfer_one.first_name }}</td>
                 {% for stroke, score in scorecard.zipped_scores_one %}
                 {% if score >= 3 %}
@@ -114,7 +124,7 @@
                 {% endfor %}
             </tr>
             <!-- Strokes Two -->
-            <tr class="handwritten-score">
+            <tr class="handwritten-score strokes">
                 <td class="scorecard-header">{{ golfer_two.first_name }}</td>
                 {% for stroke, score in scorecard.zipped_scores_two %}
                 {% if score >= 3 %}
@@ -156,5 +166,5 @@
 {% endblock %}
 
 {% block script %}
-<script src="{% static 'golf/golfer.js' %}"></script>
+<script src="{% static 'golf/vs.js' %}"></script>
 {% endblock %}

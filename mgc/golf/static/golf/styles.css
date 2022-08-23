@@ -254,7 +254,8 @@ td.stat {
     cursor: hand;
 }
 
-#stats, #averages {
+#stats,
+#averages {
     padding: 25px;
     width: 75%;
     border: 0px;
@@ -270,7 +271,8 @@ td.stat {
     margin: 20px;
 }
 
-#course-selector {
+#course-selector,
+#vs-selector {
     border-bottom: 1px solid #DDDDDD;
     place-items: center normal;
     margin: 20px;
@@ -285,4 +287,12 @@ td.stat {
 
 .course-buttons {
     margin: 5px;
+}
+
+#golfer-label {
+    margin-left: 10px;
+}
+
+#vs-submit-button {
+    margin-left: 20px;
 }
