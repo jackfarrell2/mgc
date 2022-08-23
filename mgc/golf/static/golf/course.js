@@ -33,4 +33,32 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.replace(`${origin}/courses/${course}/${tee}/${golfer}`);
     })
 
+    let averages = document.querySelector('#averages');
+    let stats = document.querySelector('#course-stats');
+    let rounds = document.getElementsByClassName('scorecard-view');
+    
+    document.querySelector('#statistics-button').addEventListener('click', function () {
+        averages.style.display = 'none';
+        for (let i = 0; i < rounds.length; i++) {
+            rounds[i].style.display = 'none';
+        }
+        stats.style.display = 'block';
+    })
+
+    document.querySelector('#hole-averages-button').addEventListener('click', function () {
+        averages.style.display = 'block';
+        for (let i = 0; i < rounds.length; i++) {
+            rounds[i].style.display = 'none';
+        }
+        stats.style.display = 'none';
+    })
+
+    document.querySelector('#rounds-button').addEventListener('click', function () {
+        averages.style.display = 'none';
+        for (let i = 0; i < rounds.length; i++) {
+            rounds[i].style.display = 'block';
+        }
+        stats.style.display = 'none';
+    })
+
 })

@@ -222,7 +222,6 @@ td.bogey {
 }
 
 #golfer-name {
-    float: right;
     padding-right: 5px;
     margin-bottom: 8px;
 }
@@ -230,6 +229,7 @@ td.bogey {
 .standings tr:nth-of-type(even) {
     background-color: #f2f2f2;
 }
+
 
 .stats-header {
     color: black;
@@ -254,9 +254,16 @@ td.stat {
     cursor: hand;
 }
 
-#stats {
+#stats, #averages {
     padding: 25px;
     width: 75%;
+    border: 0px;
+}
+
+#course-stats {
+    padding: 25px;
+    width: 100%;
+    border: 0px;
 }
 
 #content {
@@ -264,7 +271,18 @@ td.stat {
 }
 
 #course-selector {
-    border: solid gray 1px;
-    padding: 5px;
+    border-bottom: 1px solid #DDDDDD;
+    place-items: center normal;
     margin: 20px;
+}
+
+#round-marker {
+    text-decoration: underline;
+    padding: 10px;
+    height: 5px;
+    margin: 10px;
+}
+
+.course-buttons {
+    margin: 5px;
 }
