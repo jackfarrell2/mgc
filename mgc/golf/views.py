@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import MAX_EMAX
+from distutils.sysconfig import get_python_lib
 from re import M
 from select import select
 from django.db import IntegrityError
@@ -423,6 +424,113 @@ def get_course_avg_scorecard(rounds):
     zipped_scores = zip(strokes, hole_scores)                                                                                                                                                                                                                                             
     scorecard = {'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes': strokes, 'to_pars': to_pars, 'zipped_scores': zipped_scores}
     return scorecard
+
+def vs(request, golfer1, golfer2):
+    all_golfers = User.objects.all()
+    golfer_one = User.objects.get(first_name=golfer1)
+    golfer_two = User.objects.get(first_name=golfer2)
+    golfer_one_rounds = Round.objects.filter(golfer=golfer_one)
+    golfer_two_rounds = Round.objects.filter(golfer=golfer_two)
+    golfer_one_match_ids = []
+    golfer_two_match_ids = []
+    for this_round in golfer_one_rounds:
+        if this_round.match not in golfer_one_match_ids: golfer_one_match_ids.append(this_round.match)
+    for this_round in golfer_two_rounds:
+        if this_round.match not in golfer_two_match_ids: golfer_two_match_ids.append(this_round.match)
+    cumulative_match_ids = []
+    for id in golfer_one_match_ids:
+        if id in golfer_two_match_ids: cumulative_match_ids.append(id)
+    golfer_one_rounds = Round.objects.filter(golfer=golfer_one, match__in=cumulative_match_ids)
+    golfer_two_rounds = Round.objects.filter(golfer=golfer_two, match__in=cumulative_match_ids)
+    golfer_one_stats = get_stats(golfer_one_rounds)
+    golfer_two_stats = get_stats(golfer_two_rounds)
+    both_golfers_rounds = [golfer_one_rounds, golfer_two_rounds]
+    scorecards = get_vs_scorecards(both_golfers_rounds)
+
+    return render(request, "golf/vs.html", {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats, 'scorecards': scorecards, 'course_length': range(1, 10), 'all_golfers': all_golfers})
+
+def get_vs_scorecards(golfer_rounds):
+    scorecards = []
+    golfer_one_rounds = golfer_rounds[0]
+    golfer_two_rounds = golfer_rounds[1]
+
+    for i in range(len(golfer_one_rounds)):
+        round = golfer_one_rounds[i]
+        handicaps = []
+        pars = []
+        yardages = []
+        strokes_one = []
+        strokes_two = []
+        scores_one = []
+        scores_two = []
+        to_pars_one = []
+        to_pars_two = []
+        course = golfer_one_rounds[i].course
+        holes = Hole.objects.filter(course=course).order_by('tee')
+        scores_per_hole_one = Score.objects.filter(round=golfer_one_rounds[i])
+        scores_per_hole_two = Score.objects.filter(round=golfer_two_rounds[i])
+        for i in range(len(holes)):
+            yardages.append(holes[i].yardage)
+            handicaps.append(holes[i].handicap)
+            pars.append(holes[i].par)
+            strokes_one.append(scores_per_hole_one[i].score)
+            scores_one.append(scores_per_hole_one[i].score - holes[i].par)
+            strokes_two.append(scores_per_hole_two[i].score)
+            scores_two.append(scores_per_hole_two[i].score - holes[i].par)
+        par_tracker_one = 0
+        par_tracker_two = 0
+        for i in range(9):
+            if scores_one[i] == 0:
+                to_pars_one.append(par_shift(par_tracker_one))
+            else:
+                par_tracker_one += scores_one[i]
+                to_pars_one.append(par_shift(par_tracker_one))
+            if scores_two[i] == 0:
+                to_pars_two.append(par_shift(par_tracker_two))
+            else:
+                par_tracker_two += scores_two[i]
+                to_pars_two.append(par_shift(par_tracker_two))
+        par_tracker_one = 0
+        par_tracker_two = 0
+        for i in range(9):
+            if scores_one[i + 9] == 0:
+                to_pars_one.append(par_shift(par_tracker_one))
+            else:
+                par_tracker_one += scores_one[i + 9]
+                to_pars_one.append(par_shift(par_tracker_one))
+            if scores_two[i + 9] == 0:
+                to_pars_two.append(par_shift(par_tracker_two))
+            else:
+                par_tracker_two += scores_two[i + 9]
+                to_pars_two.append(par_shift(par_tracker_two))
+        front_nine_to_par_one = par_shift(sum(strokes_one[:9] - sum(pars[:9])))
+        front_nine_to_par_two = par_shift(sum(strokes_two[:9] - sum(pars[:9])))
+        back_nine_to_par_one = par_shift(sum(strokes_one[9:] - sum(pars[9:])))
+        back_nine_to_par_two = par_shift(sum(strokes_two[9:] - sum(pars[9:])))
+        total_to_par_one = par_shift(sum(strokes_one) - sum(pars))
+        total_to_par_two = par_shift(sum(strokes_two) - sum(pars))
+        to_pars_one.append(back_nine_to_par_one)
+        to_pars_two.append(back_nine_to_par_two)
+        to_pars_one.append(total_to_par_one)
+        to_pars_two.append(total_to_par_two)
+        to_pars_one.insert(9, front_nine_to_par_one)
+        to_pars_two.insert(9, front_nine_to_par_two)
+        strokes_one.append(sum(strokes_one[9:]))
+        strokes_two.append(sum(strokes_two[9:]))
+        strokes_one.append(sum(strokes_one[:-1]))
+        strokes_two.append(sum(strokes_two[:-1]))
+        strokes_one.insert(9, sum(strokes_one[:9]))
+        strokes_two.insert(9, sum(strokes_two[:9]))
+        scores_one.append('NA', 'NA')
+        scores_two.append('NA', 'NA')
+        scores_one.insert(9, 'NA')
+        scores_two.insert(9, 'NA')
+        zipped_scores_one = zip(strokes_one, scores_one)
+        zipped_scores_two = zip(strokes_two, scores_two)
+        scorecard = {'round': round, 'course': course, 'yardages': yardages, 'handicaps': handicaps, 'pars': pars, 'strokes_one': strokes_one, 'strokes_two': strokes_two, 'to_pars_one': to_pars_one, 'to_pars_two': to_pars_two, 'zipped_scores_one': zipped_scores_one, 'zipped_scores_two': zipped_scores_two}
+        scorecards.append(scorecard)
+    return scorecards
+            
 
 
 def get_scorecard(round):
