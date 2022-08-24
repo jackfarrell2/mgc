@@ -1,10 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class User(AbstractUser):
     """Golfer and Site User"""
+
     def __str__(self):
         return f"{self.first_name}"
+
 
 class Course(models.Model):
     """Golf Course - Specific to tee"""
@@ -33,16 +36,18 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+
 class Round(models.Model):
     """Golfers round information"""
-    golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="users_rounds")
+    golfer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="users_rounds")
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     date = models.DateField()
     match = models.IntegerField(default=0)
 
-
     def __str__(self):
         return f"{self.golfer} - {self.course} - {self.match} - {self.date}"
+
 
 class Hole(models.Model):
     """Every hole for each course"""
@@ -55,12 +60,16 @@ class Hole(models.Model):
     def __str__(self):
         return f"{self.tee} - {self.course}"
 
+
 class Score(models.Model):
     """Golfers score on a single hole"""
     score = models.IntegerField()
-    golfer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="golfers_scores")
-    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="round_scores")
-    hole = models.ForeignKey(Hole, on_delete=models.CASCADE, related_name="holes_scores")
+    golfer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="golfers_scores")
+    round = models.ForeignKey(
+        Round, on_delete=models.CASCADE, related_name="round_scores")
+    hole = models.ForeignKey(
+        Hole, on_delete=models.CASCADE, related_name="holes_scores")
 
     def __str__(self):
         return f"{self.golfer}: {self.score} - {self.hole}"

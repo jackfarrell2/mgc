@@ -20,17 +20,17 @@
     <!-- Track what the user has selected (new course or just new tees)-->
     <input type="hidden" id="course-or-tees" name="course-or-tees" value="null"> 
     <!-- New tee option -->
-    <div id="already_course" class="grid" style="display: none;">
+    <div id="already-course" class="grid" style="display: none;">
         <!-- Select course -->
-        <label for="course_exists">Please select the course and tees from the drop-down menus:</label>
-        <select name="course_exists" id="course_exists">
+        <label for="course-exists">Please select the course and tees from the drop-down menus:</label>
+        <select name="course-exists" id="course-exists">
             <option disabled selected>Course</option>
             {% for course_name in course_names %}
             <option value="{{ course_name }}">{{ course_name }}</option>
             {% endfor %}
         </select>
         <!-- Select tees -->
-        <select name="tees_course_exists" id="tees" class="tees" required>
+        <select name="tees-course-exists" id="tees" class="tees" required>
             <option disabled selected>Tees</option>
             <option>White</option>
             <option>Blue</option>
@@ -39,11 +39,11 @@
         </select>
     </div>
     <!-- New tee option -->
-    <div id="new_course" style="display: none;">
+    <div id="new-course" style="display: none;">
         <!-- New course name -->
-        <input type="text" name="new_course_name" id="new_course_name" placeholder="Course Name">
+        <input type="text" name="new-course-name" id="new-course-name" placeholder="Course Name">
         <!-- Tee option -->
-        <select name="new_tees" id="new_tees" class="tees" required>
+        <select name="new-tees" id="new-tees" class="tees" required>
             <option disabled selected value="Tees">Tees</option>
             <option value="White">White</option>
             <option value="Blue">Blue</option>
@@ -74,27 +74,27 @@
         <tr class="yardages-row" id="yardages">
             <th class="scorecard-header">Yardage</th>
             {% for i in course_length %}
-            <td><input class="new-yardages" name="yardages_{{ i }}" type='number' min='50' max='999' required></td>
+            <td><input class="new-yardages" name="yardages-{{ i }}" type='number' min='50' max='999' required></td>
             {% endfor %}
-            <td><input class="new-yardages-long" name="yardages_front" type='number' min='1000' max='5000' required>
+            <td><input class="new-yardages-long" name="yardages-front" type='number' min='1000' max='5000' required>
             </td>
             {% for i in course_length %}
-            <td><input class="new-yardages" name="yardages_{{ i|add:'9' }}" type='number' min='50' max='999' required>
+            <td><input class="new-yardages" name="yardages-{{ i|add:'9' }}" type='number' min='50' max='999' required>
             </td>
             {% endfor %}
-            <td><input class="new-yardages-long" name="yardages_back" type='number' min='1000' max='5000' required></td>
-            <td><input class="new-yardages-long" name="yardages_total" type='number' min='1000' max='9999' required>
+            <td><input class="new-yardages-long" name="yardages-back" type='number' min='1000' max='5000' required></td>
+            <td><input class="new-yardages-long" name="yardages-total" type='number' min='1000' max='9999' required>
             </td>
         </tr>
         <!-- Handicaps -->
         <tr class="handicap-row">
             <th class="scorecard-header">Handicap</th>
             {% for i in course_length %}
-            <td><input name="handicap_{{ i }}" type='number' min='1' max='18' required></td>
+            <td><input name="handicap-{{ i }}" type='number' min='1' max='18' required></td>
             {% endfor %}
             <td></td>
             {% for i in course_length %}
-            <td><input name="handicap_{{ i|add:'9' }}" type='number' min='1' max='18' required></td>
+            <td><input name="handicap-{{ i|add:'9' }}" type='number' min='1' max='18' required></td>
             {% endfor %}
             <td></td>
             <td></td>
@@ -103,17 +103,17 @@
         <tr class="pars-row">
             <th class="scorecard-header">Par</th>
             {% for i in course_length %}
-            <td><input name="par_{{ i }}" type='number' min='3' max='5' required></td>
+            <td><input name="par-{{ i }}" type='number' min='3' max='5' required></td>
             {% endfor %}
-            <td><input name="par_front" type='number' min='30' max='80' required></td>
+            <td><input name="par-front" type='number' min='30' max='80' required></td>
             {% for i in course_length %}
-            <td><input name="par_{{ i|add:'9' }}" type='number' min='3' max='5' required></td>
+            <td><input name="par-{{ i|add:'9' }}" type='number' min='3' max='5' required></td>
             {% endfor %}
-            <td><input name="par_back" type='number' min='30' max='80' required></td>
-            <td><input name="par_total" type='number' min='60' max='99' required></td>
+            <td><input name="par-back" type='number' min='30' max='80' required></td>
+            <td><input name="par-total" type='number' min='60' max='99' required></td>
         </tr>
     </table>
-    <input class="btn btn-success btn-med" id="new-course" type="submit" value="Add Course">
+    <input class="btn btn-success btn-med" id="new-course-button" type="submit" value="Add Course">
 </form>
 {% endblock %}
 

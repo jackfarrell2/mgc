@@ -4,6 +4,7 @@
 {% block title %}MGC: {{ golfer }}{% endblock %}
 
 {% block main %}
+<!-- Select Golfer -->
 <div class="grid">
     <div id="choose-golfer" class="choose-golfer">
         <label for="golfer-name">Golfer: </label>&nbsp
@@ -14,6 +15,7 @@
         </select>
     </div>
 </div>
+<!-- Statistics -->
 <table id="stats" class="table table-bordered standings">
     <thead class="success">
         <tr class="stats-header">
@@ -40,6 +42,7 @@
         {% endfor %}
     </tr>
 </table>
+<!-- Scorecards -->
 <div id="content" class="container-sm">
     {% for scorecard in scorecards %}
     <div id="scorecard" class="scorecard-view">

@@ -126,9 +126,8 @@ th {
     font-size: 15px;
 }
 
-#post-match,
-#new-course {
-    margin: 0px;
+#post-match, #new-course-button, #submit-button {
+    margin-left: 10px;
     background-color: #198754;
     border-color: #198754;
 }
@@ -295,4 +294,11 @@ td.stat {
 
 #vs-submit-button {
     margin-left: 20px;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+#login-button {
+    background-color: #198754;
+    color: white;
 }

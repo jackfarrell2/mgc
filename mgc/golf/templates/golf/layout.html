@@ -1,8 +1,6 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0">
@@ -17,14 +15,13 @@
     {% block script %}
     {% endblock %}
 </head>
-
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" id="nav">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'index' %}">Manchester Golf Club</a>
             <div>
                 <ul class="navbar-nav me-auto mt-2">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'golfer' request.user %}">Golfers </a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'golfer' 'Jack' %}">Golfers </a></li>
                     <li class="nav-item"><a class="nav-link"
                             href="{% url 'course' 'Manchester Country Club' 'White' 'Jack' %}">Courses </a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'vs' 'Jack' 'Nick' %}">Vs </a></li>
@@ -43,5 +40,4 @@
         {% block main %}{% endblock %}
     </main>
 </body>
-
 </html>

@@ -4,15 +4,18 @@
 {% block title %}MGC: {{ golfer_one }} Vs {{ golfer_two}} {% endblock %}
 
 {% block main %}
+<!-- Select Golfers -->
 <div id="vs-selector" class="container-sm">
     <div class="grid">
         <div>
+            <!-- Golfer One -->
             <label for="golfer-name-one" id="golfer-label">Golfer One: </label>
             <select name="golfer-name-one" id="golfer-name-one">
                 {% for golfer in all_golfers %}
                 <option value="{{ golfer }}">{{ golfer }}</option>
                 {% endfor %}
             </select>
+            <!-- Golfer Two -->
             <label for="golfer-name-two" id="golfer-label">Golfer Two: </label>
             <select name="golfer-name-two" id="golfer-name-two">
                 {% for golfer in all_golfers %}
@@ -23,7 +26,9 @@
         </div>
     </div>
 </div>
+<!-- Golfers Record -->
 <p><strong>{{ record }}</strong></p>
+<!-- Statistics -->
 <table id="stats" class="table table-bordered standings">
     <thead class="success">
         <tr class="stats-header">
@@ -44,17 +49,20 @@
             <td class="stat"><img src="{% static 'golf/eagle.png' %}" alt="eagle" width=35 height=35></td>
         </tr>
     </thead>
+    <!-- Golfer One Statistics -->
     <tr>
         {% for stat in stats_one %}
         <td class="stat">{{ stat }}</td>
         {% endfor %}
     </tr>
+    <!-- Golfer Two Statistics -->
     <tr>
         {% for stat in stats_two %}
         <td class="stat">{{ stat }}</td>
         {% endfor %}
     </tr>
 </table>
+<!-- Scorecards -->
 <div id="content" class="container-sm">
     {% for scorecard in scorecards %}
     <div id="scorecard" class="scorecard-view">

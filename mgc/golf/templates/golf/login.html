@@ -1,8 +1,7 @@
 {% extends "golf/layout.html" %}
 {% load static %}
-
 {% block main %}
-
+    <!-- Login page -->
     <h2>Login</h2>
     {% if message %}
         <div>{{ message }}</div>
@@ -16,9 +15,10 @@
         <div class="form-group">
             <input class="form-control" type="password" name="password" placeholder="Password">
         </div>
-        <input class="btn btn-primary" type="submit" value="Login">
+        <div class="grid">
+            <input class="btn" id="login-button" type="submit" value="Login">
+        </div>
     </form>
 
     Don't have an account? <a href="{% url 'register' %}">Register here.</a>
-
 {% endblock %}

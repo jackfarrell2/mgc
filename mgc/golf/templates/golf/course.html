@@ -4,21 +4,25 @@
 {% block title %}MGC: {{ golfer }} - {{ scorecards.0.course.abbreviation }}{% endblock %}
 
 {% block main %}
+<!-- Course and Golfer Selection -->
 <div id="course-selector" class="container-sm">
     <div class="grid">
         <div>
+            <!-- Golfer -->
             <label for="golfer-name">Golfer: </label>
             <select name="golfer-name" id="golfer-name">
                 {% for golfer in all_golfers %}
                 <option value="{{ golfer }}">{{ golfer }}</option>
                 {% endfor %}
             </select>
+            <!-- Course -->
             <label for="course-name">Course: </label>
             <select name="course-name" id="course-name">
                 {% for course in courses %}
                 <option value="{{ course }}">{{ course }}</option>
                 {% endfor %}
             </select>
+            <!-- Tee -->
             <label for="tee-name">Tee: </label>
             <select name="tee-name" id="tee-name">
                 {% for tee in tees %}
@@ -29,11 +33,13 @@
         </div>
     </div>
 </div>
+<!-- Buttons to change views -->
 <div class="course-buttons">
     <button class="btn btn-warning btn-med" id="statistics-button">Show Statistics</button>
     <button class="btn btn-warning btn-med" id="hole-averages-button">Show Hole Averages</button>
     <button class="btn btn-warning btn-med" id="rounds-button">Show Rounds</button>
 </div>
+<!-- Statistics -->
 <div class="grid">
     <table id="course-stats" class="table table-bordered standings" style="display: none; float: center;">
         <thead class="success">
@@ -62,6 +68,7 @@
         </tr>
     </table>
 </div>
+<!-- Averages -->
 <div id="averages" class="averages">
     <table class="table table-sm table-bordered">
         <!-- Holes -->
@@ -141,6 +148,7 @@
         </tr>
     </table>
 </div>
+<!-- Scorecards -->
 {% for scorecard in scorecards %}
 <div id="scorecard" class="scorecard-view" style="display: none;">
     <p class="scorecard-course-name">{{ scorecard.round.course }}</p>
