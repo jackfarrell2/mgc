@@ -5,8 +5,8 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from .models import User, Course, Hole, Score, Round
-from golf.helpers import course_abbreviate, get_stats, get_scorecard
-from golf.helpers import get_course_avg_scorecard, get_vs_scorecards
+from golf.helpers import get_stats, get_scorecard, \
+    get_course_avg_scorecard, get_vs_scorecards, add_course
 
 
 def index(request):
@@ -180,7 +180,7 @@ def vs(request, golfer1, golfer2):
 
 
 def post(request):
-    """Lets the user post a match"""
+    """Lets the user post a match. Default to MCC White Tees"""
     if request.method == "POST":
         # Ensure user is logged in
         if not request.user.is_authenticated:
@@ -217,14 +217,17 @@ def post(request):
                         return render(request, "golf/error.html",
                                       {'message': msg})
                     golfer_score.append(this_score)
+                # Ensure front nine adds up
                 if sum(golfer_score[1:10]) != golfer_score[10]:
                     message = f"{golfer}'s front nine scores do not add up."
                     return render(request, "golf/error.html",
                                   {'message': message})
+                # Ensure back nine adds up
                 elif sum(golfer_score[11:20]) != golfer_score[20]:
                     message = f"{golfer}'s back nine scores do not add up."
                     return render(request, "golf/error.html",
                                   {'message': message})
+                # Clean up golfers scores
                 golfer_score.pop(10)
                 golfer_score.pop()
                 golfer_score.pop()
@@ -247,6 +250,7 @@ def post(request):
                     Round.objects.all().order_by('-match').values()
                 highest_match = highest_matches[0]['match']
                 match = highest_match + 1
+            # Save a round for each golfer
             for i in range(len(golfer_scores)):
                 golfer_name = golfer_scores[i][0]
                 golfer = User.objects.get(first_name=golfer_name)
@@ -327,6 +331,7 @@ def post_course(request, name):
 
 
 def post_tees(request, name, tees):
+    """Allows the user to post a round or match."""
     # Provide option to switch course
     courses = Course.objects.all()
     course_names = []
@@ -373,7 +378,7 @@ def new(request):
     """Allows the user to add a course to the database"""
     if request.method == "POST":
         # Verify and store all course information
-        # Verify valid slope and course rating input
+        # Verify valid slope
         try:
             slope = int(request.POST['slope'])
         except:
@@ -382,20 +387,24 @@ def new(request):
         if slope < 55 or slope > 155:
             message = 'Invalid Slope Rating'
             return render(request, "golf/error.html", {'message': message})
+        # Verify valid rating
         try:
             rating = float(request.POST['rating'])
         except:
             message = 'Invalid Course Rating'
             return render(request, "golf/error.html", {'message': message})
+        # Verify the rating format
         test_rating = str(rating)
         if len(test_rating) != 4:
             message = 'Invalid Course Rating'
             return render(request, "golf/error.html", {'message': message})
+        # Check for integers
         for i in range(len(test_rating)):
             if i != 2:
                 if not test_rating[i].isdigit():
                     return render(request, "golf/error.html",
                                   {'message': 'Invalid Course Rating'})
+            # Check for period
             else:
                 if test_rating[i] != '.':
                     return render(request, "golf/error.html",
@@ -413,15 +422,17 @@ def new(request):
                               {'message': 'No hole should have a yardage" \
                               "less than 50 or greater than 999'})
             yardages.append(this_yardage)
-        # Verify math adds up
+        # Verify front nine yardages adds up
         if sum(yardages[0:9]) != int(request.POST['yardages-front']):
             message = "The front nine yardages do" \
                 "not add up to the front nine yardage total."
             return render(request, "golf/error.html", {'message': message})
+        # Verify back nine yardages add up
         elif sum(yardages[9:]) != int(request.POST['yardages-back']):
             message = "The back nine yardages do" \
                 "not add up to the front nine yardage total."
             return render(request, "golf/error.html", {'message': message})
+        # Verify total yardages add up
         elif sum(yardages) != int(request.POST['yardages-total']):
             message = "The yardages by hole don't add up to yardage total."
             return render(request, "golf/error.html", {'message': message})
@@ -436,15 +447,17 @@ def new(request):
                 return render(request, "golf/error.html",
                               {'message': message})
             pars.append(this_par)
-        # Verify math adds up
+        # Verify front nine pars add up
         if sum(pars[0:9]) != int(request.POST['par-front']):
             message = "The front nine pars do not" \
                 "add up to the front nine par total."
             return render(request, "golf/error.html", {'message': message})
+        # Verify back nine pars add up
         elif sum(pars[9:]) != int(request.POST['par-back']):
             message = "The back nine pars do not" \
                 "add up to the back nine par total."
             return render(request, "golf/error.html", {'message': message})
+        # Verify total pars add up
         elif sum(pars) != int(request.POST['par-total']):
             message = "The pars by hole do not add up to the par total."
             return render(request, "golf/error.html", {'message': message})
@@ -470,30 +483,11 @@ def new(request):
             all_courses = Course.objects.all()
             for i in range(len(all_courses)):
                 if all_courses[i].name == request.POST['new-course-name']:
-                    message = message
+                    message = 'Course already exists.'
                     return render(request, "golf/error.html",
                                   {'message': message})
-            # Add Course
-            course_abbreviation = course_abbreviate(
-                request.POST['new-course-name'])
-            yardages_front = request.POST['yardages-front']
-            yardages_back = request.POST['yardages-back']
-            this_course = Course(name=request.POST['new-course-name'],
-                                 tees=request.POST['new-tees'],
-                                 front_par=int(request.POST['par-front']),
-                                 back_par=int(request.POST['par-back']),
-                                 par=int(request.POST['par-total']),
-                                 front_yardage=int(yardages_front),
-                                 back_yardage=int(yardages_back),
-                                 yardage=int(request.POST['yardages-total']),
-                                 slope=slope, course_rating=rating,
-                                 abbreviation=course_abbreviation)
-            this_course.save()
-            for i in range(18):
-                this_hole = Hole(course=this_course, tee=i+1,
-                                 par=pars[i], yardage=yardages[i],
-                                 handicap=handicaps[i])
-                this_hole.save()
+            # Create course
+            add_course(request, pars, yardages, handicaps)
             return HttpResponseRedirect(reverse('index'))
         # User is just adding a new tee option
         elif request.POST['course-or-tees'] == 'Tees':
@@ -506,28 +500,7 @@ def new(request):
                         "exists for the selected course."
                     return render(request, "golf/error.html",
                                   {'message': message})
-
-            # Add Course
-            course_abbreviation = course_abbreviate(
-                request.POST['new-course-name'])
-            yardages_front = request.POST['yardages-front']
-            yardages_back = request.POST['yardages-back']
-            this_course = Course(name=request.POST['course-exists'],
-                                 tees=request.POST['tees-course-exists'],
-                                 front_par=int(request.POST['par-front']),
-                                 back_par=int(request.POST['par-back']),
-                                 par=int(request.POST['par-total']),
-                                 front_yardage=int(yardages_front),
-                                 back_yardage=int(yardages_back),
-                                 yardage=int(request.POST['yardages-total']),
-                                 slope=slope, course_rating=rating,
-                                 abbreviation=course_abbreviation)
-            this_course.save()
-            for i in range(18):
-                this_hole = Hole(course=this_course, tee=i+1,
-                                 par=pars[i], yardage=yardages[i],
-                                 handicap=handicaps[i])
-                this_hole.save()
+            add_course(request, pars, yardages, handicaps, False)  # Add course
             return HttpResponseRedirect(reverse('index'))
         else:
             # Return an error
@@ -574,6 +547,7 @@ def logout_view(request):
 def register(request):
     """Offer register functionality"""
     if request.method == "POST":
+        # Gather user info
         username = request.POST["username"]
         email = request.POST["email"]
         first_name = request.POST["first-name"]
@@ -595,7 +569,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('index'))  # Homepage redirect
     else:
         return render(request, "golf/register.html")
 

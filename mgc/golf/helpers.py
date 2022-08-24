@@ -1,4 +1,4 @@
-from .models import Score, Hole
+from .models import Score, Hole, Course
 
 
 def course_abbreviate(course_name: str) -> str:
@@ -272,3 +272,36 @@ def get_to_pars(strokes: list, pars: list) -> list:
     to_pars.append(total_to_par)
     to_pars.insert(9, front_nine_to_par)
     return to_pars
+
+
+def add_course(request, pars: list, yardages: list, handicaps: list, new=True):
+    """Adds a course to the database"""
+    # Check if the course is new or just new tee's
+    if new:
+        tees = request.POST['new-tees']
+        course_name = request.POST['new-course-name']
+    else:
+        tees = request.POST['tees-course-exists']
+        course_name = request.POST['course-exists']
+    course_abbreviation = course_abbreviate(course_name)
+    yardages_front = request.POST['yardages-front']
+    yardages_back = request.POST['yardages-back']
+    # Create course
+    this_course = Course(name=course_name,
+                         tees=tees,
+                         front_par=int(request.POST['par-front']),
+                         back_par=int(request.POST['par-back']),
+                         par=int(request.POST['par-total']),
+                         front_yardage=int(yardages_front),
+                         back_yardage=int(yardages_back),
+                         yardage=int(request.POST['yardages-total']),
+                         slope=int(request.POST['slope']),
+                         course_rating=float(request.POST['rating']),
+                         abbreviation=course_abbreviation)
+    this_course.save()  # Save course
+    # Add holes
+    for i in range(18):
+        this_hole = Hole(course=this_course, tee=i+1,
+                         par=pars[i], yardage=yardages[i],
+                         handicap=handicaps[i])
+        this_hole.save()
