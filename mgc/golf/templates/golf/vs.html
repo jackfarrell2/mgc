@@ -1,7 +1,7 @@
 {% extends "golf/layout.html" %}
 {% load static %}
 
-{% block title %}MGC: {{ golfer_one }} Vs {{ golfer_two}} {% endblock %}
+{% block title %}MGC: {{ golfer_one }} Vs {{ golfer_two}}{% endblock %}
 
 {% block main %}
 <!-- Select Golfers -->
@@ -171,6 +171,62 @@
     </div>
 </div>
 {% endfor %}
+<!-- Pagination -->
+<nav aria-label="scorecard-pages" class="rounds-paginator">
+    <ul class="pagination">
+        <!-- Previous button -->
+        {% if scorecards.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        <!-- Two pages previous -->
+        {% if scorecards.number == scorecards.paginator.num_pages %}
+        {% if scorecards.number != 2 and scorecards.number != 1 %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.previous_page_number|add:'-1' }}">
+                {{scorecards.previous_page_number|add:'-1' }}
+            </a>
+        </li>
+        {% endif %}
+        {% endif %}
+        <!-- Previous page -->
+        {% if scorecards.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.previous_page_number }}">
+                {{scorecards.previous_page_number }}
+            </a>
+        </li>
+        {% endif %}
+        <!-- Current page -->
+        <li class="page-item active" aria-current="page">
+            <a class="page-link" href="?page={{ scorecards.number }}">
+                {{ scorecards.number }}</a>
+        </li>
+        <!-- Next page -->
+        {% if scorecards.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.next_page_number }}">
+                {{scorecards.next_page_number }}
+            </a>
+        </li>
+        {% endif %}
+        <!-- Two pages next -->
+        {% if scorecards.number == 1 and scorecards.paginator.num_pages > 2 %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.next_page_number|add:'1' }}">
+                {{scorecards.next_page_number|add:"1" }}
+            </a>
+        </li>
+        {% endif %}
+        <!-- Next button -->
+        {% if scorecards.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ scorecards.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}
 
 {% block script %}

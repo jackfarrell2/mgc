@@ -4,7 +4,7 @@
     padding: 15px;
 }
 
-nav {
+#nav {
     background-color: #198754;
     height: 80px;
 }
@@ -126,7 +126,9 @@ th {
     font-size: 15px;
 }
 
-#post-match, #new-course-button, #submit-button {
+#post-match,
+#new-course-button,
+#submit-button {
     margin-left: 10px;
     background-color: #198754;
     border-color: #198754;
@@ -301,4 +303,29 @@ td.stat {
 #login-button {
     background-color: #198754;
     color: white;
+}
+
+.pagination>li>a {
+    background-color: #198754;
+    color: white;
+}
+
+.pagination>li>a:focus,
+.pagination>li>a:hover,
+.pagination>li>span:focus,
+.pagination>li>span:hover {
+    color: #198754;
+    background-color: white;
+    border-color: white;
+}
+
+.page-item.active .page-link {
+    color: #198754;
+    background-color: white;
+    border: solid 1px white;
+}
+
+.rounds-paginator {
+    margin-top: 25px;
+    margin-bottom: 50px;
 }

@@ -1,9 +1,11 @@
 from datetime import datetime
+import this
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
+from django.core.paginator import Paginator
 from .models import User, Course, Hole, Score, Round
 from golf.helpers import get_stats, get_scorecard, \
     get_course_avg_scorecard, get_vs_scorecards, add_course
@@ -50,8 +52,13 @@ def golfer(request, golfer):
     for this_round in golfer_rounds:
         scorecard = get_scorecard(this_round)
         scorecards.append(scorecard)
-    context = {'stats': stats, 'scorecards': scorecards, 'golfer': this_golfer,
-               'course_length': range(1, 10), 'all_golfers': all_golfers}
+    # Paginate scorecards
+    scorecards = Paginator(scorecards, 3)
+    page_number = request.GET.get('page')
+    this_page_scorecard = scorecards.get_page(page_number)
+    context = {'stats': stats, 'scorecards': this_page_scorecard,
+               'golfer': this_golfer, 'course_length': range(1, 10),
+               'all_golfers': all_golfers}
     return render(request, "golf/golfer.html", context)
 
 
@@ -93,11 +100,15 @@ def course(request, course, tees, golfer):
     for round in rounds:
         scorecard = get_scorecard(round)
         scorecards.append(scorecard)
-    stats = get_stats(rounds)  # Retrieve stats for this golfers at this course
+    stats = get_stats(rounds)  # Retrieve stats for this golfer at this course
     # Retrieve golfers hole averages at this course
     avg_scorecard = get_course_avg_scorecard(rounds)
+    # Paginate scorecards
+    scorecards = Paginator(scorecards, 3)
+    page_number = request.GET.get('page')
+    this_page_scorecard = scorecards.get_page(page_number)
     context = {'stats': stats, 'avg_scorecard': avg_scorecard,
-               'scorecards': scorecards, 'courses': course_names,
+               'scorecards': this_page_scorecard, 'courses': course_names,
                'tees': tee_options, 'golfer': golfer,
                'course_length': range(1, 10), 'all_golfers': all_golfers}
     return render(request, "golf/course.html", context)
@@ -105,6 +116,10 @@ def course(request, course, tees, golfer):
 
 def vs(request, golfer1, golfer2):
     """Shows stats of one golfer vs another"""
+    # Ensure two golfers were selected
+    if golfer1 == golfer2:
+        message = "Must select two separate golfers."
+        return render(request, "golf/error.html", {'message': message})
     all_golfers = User.objects.all()  # Offer option to switch to any golfer
     # Retrieve all rounds for selected golfers
     golfer_one = User.objects.get(first_name=golfer1)
@@ -172,10 +187,15 @@ def vs(request, golfer1, golfer2):
         buffer = golfer_one_stats
         golfer_one_stats = golfer_two_stats
         golfer_two_stats = buffer
+    # Paginate scorecards
+    scorecards = Paginator(scorecards, 3)
+    page_number = request.GET.get('page')
+    this_page_scorecard = scorecards.get_page(page_number)
     context = {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats,
-               'scorecards': scorecards, 'course_length': range(1, 10),
-               'all_golfers': all_golfers, 'golfer_one': golfer_one,
-               'golfer_two': golfer_two, 'record': record}
+               'scorecards': this_page_scorecard,
+               'course_length': range(1, 10), 'all_golfers': all_golfers,
+               'golfer_one': golfer_one, 'golfer_two': golfer_two,
+               'record': record}
     return render(request, "golf/vs.html", context)
 
 
