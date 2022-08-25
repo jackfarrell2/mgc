@@ -371,8 +371,8 @@ def post_tees(request, name, tees):
     for i in range(len(available_courses)):
         available_tees.append(available_courses[i].tees)
     index = available_tees.index(f'{tees}')
-    available_tees.insert(0, available_tees.pop(index)
-                          )  # Default to requested tees
+    # Default to requested tees
+    available_tees.insert(0, available_tees.pop(index))
 
     # Get the hole information for this course
     holes = Hole.objects.filter(course=default_course)
@@ -535,6 +535,70 @@ def new(request):
                 course_names.append(course.name)
         context = {'course_names': course_names, "course_length": range(1, 10)}
         return render(request, "golf/new.html", context)
+
+
+def edit(request, match_id):
+    """Edits a match in the database"""
+    if request.method == "POST":
+        
+    else:    
+        # Retrieve match rounds
+        rounds = Round.objects.filter(match=match_id)
+        # Provide course names with the given course selected
+        course_name = rounds[0].course.name
+        course_tees = rounds[0].course.tees
+        all_courses = Course.objects.all()
+        course_names = []
+        for course in all_courses:
+            if course.name not in course_names:
+                course_names.append(course.name)
+        # Select the given course
+        course_name_index = course_names.index(course_name)
+        course_names.insert(0, course_names.pop(course_name_index))
+        context = {'course_names': course_names}
+        # Retrieve all golfers 
+        all_golfers = User.objects.all()
+        # Retrieve selected golfers  
+        golfers = []
+        for this_round in rounds:
+            golfers.append(this_round.golfer)
+        default_course = Course.objects.get(name=course_name,
+                                            tees=course_tees)
+        available_courses = Course.objects.filter(name=course_name)
+        available_tees = []
+        for i in range(len(available_courses)):
+            available_tees.append(available_courses[i].tees)
+        index = available_tees.index(f'{course_tees}')
+        available_tees.insert(0, available_tees.pop(index))
+        holes = Hole.objects.filter(course=default_course)
+        yardages = []
+        handicaps = []
+        pars = []
+        for i in range(len(holes)):
+            yardages.append(holes[i].yardage)
+            handicaps.append(holes[i].handicap)
+            pars.append(holes[i].par)
+        date = rounds[0].date
+        date = date.strftime("%Y-%m-%d")
+        # Get golfer strokes
+        golfers_strokes = []
+        for golfer_round in rounds:
+            golfer_strokes = []
+            golfer_scores = Score.objects.filter(round=golfer_round)
+            for score in golfer_scores:
+                golfer_strokes.append(score.score) 
+            golfer_strokes.append(sum(golfer_strokes[9:]))
+            golfer_strokes.append(sum(golfer_strokes[:-1]))
+            golfer_strokes.insert(9, sum(golfer_strokes[:9]))
+            golfer_strokes.insert(0, golfer_round.golfer.first_name)
+            golfers_strokes.append(golfer_strokes)
+
+            
+        context = {"course_length": range(1, 10), "course_names": course_names,
+               "golfers": golfers_strokes, "all_golfers": all_golfers, "default_course": default_course,
+               "yardages": yardages, 'handicaps': handicaps, "pars": pars,
+               "available_tees": available_tees, "date": date, "match_id": match_id}
+        return render(request, "golf/edit.html", context)
 
 
 def login_view(request):
