@@ -68,7 +68,7 @@
     <div id="scorecard" class="scorecard-view">
         <p class="scorecard-course-name">{{ scorecard.round.course }}</p>
         <p class="scorecard-course-date">{{ scorecard.round.date }}</p>
-        <table class="table table-sm table-bordered">
+        <table class="table table-sm table-bordered scorecard-table">
             <!-- Holes -->
             <tr class="holes-row">
                 <th class="scorecard-header">Hole</th>
@@ -168,6 +168,28 @@
                 <td>{{ scorecard.course.par }}</td>
             </tr>
         </table>
+        <div class="score-key">
+            <!-- Birdie or better -->
+            <div class="birdie-key">
+                <div class="birdie-box"></div>
+                <span class="score-label">Birdie or Better</span>
+            </div>
+            <!-- Par -->
+            <div class="par-key">
+                <div class="par-box"></div>
+                <span class="score-label">Par</span>
+            </div>
+            <!-- Double Bogey -->
+            <div class="double-bogey-key">
+                <div class="double-bogey-box"></div>
+                <span class="score-label">Double Bogey</span>
+            </div>
+            <!-- Triple or worse s-->
+            <div class="triple-or-worse-key">
+                <div class="triple-or-worse-box"></div>
+                <span class="score-label">Triple Bogey or Worse</span>
+            </div>
+        </div>
     </div>
 </div>
 {% endfor %}

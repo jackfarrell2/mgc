@@ -329,3 +329,56 @@ td.stat {
     margin-top: 25px;
     margin-bottom: 50px;
 }
+
+.birdie-box,
+.par-box,
+.double-bogey-box,
+.triple-or-worse-box {
+    width: 10px;
+    height: 10px;
+    border: solid 1px grey;
+    float: left;
+    margin-top: 4px;
+    margin-right: 4px;
+}
+
+.birdie-box {
+    background-color: #95ef86;
+}
+
+.par-box {
+    background-color: #fceb9e;
+
+}
+
+.double-bogey-box {
+    background-color: #ff8f8f;
+}
+
+.triple-or-worse-box {
+    background-color: #caadc5;
+}
+
+.score-label {
+    font-size: 12px;
+    float: left;
+}
+
+.score-key {
+    width: 100%;
+    display: flex;
+}
+
+.birdie-key,
+.par-key,
+.double-bogey-key,
+.triple-or-worse-key {
+    height: 20px;
+    text-align: left;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.scorecard-table {
+    margin-bottom: 5px;
+}
