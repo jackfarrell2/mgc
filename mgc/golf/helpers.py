@@ -1,7 +1,7 @@
-from .models import Score, Hole, Course
+from .models import Score, Hole, Course, Round, User
 
 
-def course_abbreviate(course_name: str) -> str:
+def abbreviate_course(course_name: str) -> str:
     """Abbreviates a course name"""
     abbreviation = course_name[0]
     for i in range(1, len(course_name)):
@@ -144,7 +144,6 @@ def get_vs_scorecards(golfer_rounds) -> list:
     # Get golfer rounds
     golfer_one_rounds = golfer_rounds[0]
     golfer_two_rounds = golfer_rounds[1]
-
     for i in range(len(golfer_one_rounds)):  # For each match / pair of rounds
         # Create a list for each row in the scorecard
         round = golfer_one_rounds[i]
@@ -283,7 +282,7 @@ def add_course(request, pars: list, yardages: list, handicaps: list, new=True):
     else:
         tees = request.POST['tees-course-exists']
         course_name = request.POST['course-exists']
-    course_abbreviation = course_abbreviate(course_name)
+    course_abbreviation = abbreviate_course(course_name)
     yardages_front = request.POST['yardages-front']
     yardages_back = request.POST['yardages-back']
     # Create course
@@ -384,8 +383,11 @@ def post_match(request) -> tuple:
                 name=request.POST['course'], tees=request.POST['tees'])
             date = request.POST['round-date']
             this_round = Round(golfer=golfer, course=course,
-                                date=date, match=match)
+                               date=date, match=match)
             this_round.save()
+            # Add golfer to those who have rounds played
+            golfer.has_rounds = True
+            golfer.save()
             # Store each score
             for j in range(1, len(golfer_scores[i])):
                 score = int(golfer_scores[i][j])
@@ -394,3 +396,44 @@ def post_match(request) -> tuple:
                     score=score, golfer=golfer, round=this_round, hole=hole)
                 this_score.save()
         return (True, "Success")
+
+
+def get_course_names(course: str) -> list:
+    """Returns all unique course names"""
+    courses = Course.objects.all()
+    course_names = []
+    for this_course in courses:
+        if this_course.name not in course_names:
+            course_names.append(this_course.name)
+    # Move the selected course to the front of the list
+    selected_course_index = course_names.index(course)
+    if selected_course_index != 0:
+        course_names.insert(0, course_names.pop(selected_course_index))
+    return course_names
+
+
+def get_tee_options(course: str, tees: str) -> list:
+    """Returns all available tee options for a given course name"""
+    tee_options = []
+    duplicate_courses = Course.objects.filter(name=course)
+    for course in duplicate_courses:
+        tee_options.append(course.tees)
+    # Move selected tees to the front
+    selected_tee_index = tee_options.index(tees)
+    if selected_tee_index != 0:
+        tee_options.insert(0, tee_options.pop(selected_tee_index))
+    return tee_options
+
+
+def get_course_info(course) -> list:
+    """Returns scorecard information for a given course"""
+    holes = Hole.objects.filter(course=course)
+    yardages = []
+    handicaps = []
+    pars = []
+    for i in range(len(holes)):
+        yardages.append(holes[i].yardage)
+        handicaps.append(holes[i].handicap)
+        pars.append(holes[i].par)
+    course_info = [pars, handicaps, yardages]
+    return course_info

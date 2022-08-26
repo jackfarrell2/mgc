@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.policy import default
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -8,29 +9,25 @@ from django.core.paginator import Paginator
 from .models import User, Course, Hole, Score, Round
 from golf.helpers import delete_rounds, get_stats, get_scorecard, \
     get_course_avg_scorecard, get_vs_scorecards, add_course, \
-    post_match
+    post_match, get_course_names, get_tee_options, get_course_info
 
 
 def index(request):
     """Show statistics for all golfers, excluding solo rounds"""
-    # Only show statistics for golfers who have played rounds
-    all_golfers = []
-    all_rounds = Round.objects.all()
-    for round in all_rounds:
-        if round.golfer not in all_golfers:
-            all_golfers.append(round.golfer)
-    # Gather statistics for all golfers
+    # Gather statistics for golfers who have played rounds
+    all_golfers = User.objects.filter(has_rounds=True)
     all_stats = []
     for golfer in all_golfers:
         # Exclude solo rounds
         golfers_rounds = Round.objects.filter(golfer=golfer).exclude(match=0)
         stats = get_stats(golfers_rounds)
         all_stats.append(stats)
-
     # Sort stats by average score
+
     def avg_score(golfers_stats):
         return golfers_stats[2]
     all_stats.sort(key=avg_score)
+    # Render template
     context = {'all_stats': all_stats}
     return render(request, "golf/index.html", context)
 
@@ -42,11 +39,7 @@ def golfer(request, golfer):
     golfer_rounds = Round.objects.filter(golfer=this_golfer).order_by('-date')
     stats = get_stats(golfer_rounds)
     # Only offer the option to switch to golfers that have played a round
-    all_golfers = []
-    all_rounds = Round.objects.all()
-    for round in all_rounds:
-        if round.golfer not in all_golfers:
-            all_golfers.append(round.golfer)
+    all_golfers = User.objects.filter(has_rounds=True)
     # Gather a scorecard for every round the golfer has played
     scorecards = []
     for this_round in golfer_rounds:
@@ -56,6 +49,7 @@ def golfer(request, golfer):
     scorecards = Paginator(scorecards, 3)
     page_number = request.GET.get('page')
     this_page_scorecard = scorecards.get_page(page_number)
+    # Render template
     context = {'stats': stats, 'scorecards': this_page_scorecard,
                'golfer': this_golfer, 'course_length': range(1, 10),
                'all_golfers': all_golfers}
@@ -65,26 +59,9 @@ def golfer(request, golfer):
 def course(request, course, tees, golfer):
     """Shows a golfers statistics, hole averages, and rounds on a course"""
     # Provide option to switch golfer and/or course
-    all_golfers = User.objects.all()
-    courses = Course.objects.all()
-    # Filter out duplicate course names
-    course_names = []
-    for each_course in courses:
-        if each_course.name not in course_names:
-            course_names.append(each_course.name)
-    # Move the selected course to the front of the drop down menu
-    selected_course_index = course_names.index(course)
-    if selected_course_index != 0:
-        course_names.insert(0, course_names.pop(selected_course_index))
-    # Offer tee options for each available tee at this given course
-    tee_options = []
-    duplicate_courses = Course.objects.filter(name=course)
-    for course in duplicate_courses:
-        tee_options.append(course.tees)
-    # Move the selected tee to the front of the drop down menu
-    selected_tee_index = tee_options.index(tees)
-    if selected_tee_index != 0:
-        tee_options.insert(0, tee_options.pop(selected_tee_index))
+    all_golfers = User.objects.filter(has_rounds=True)
+    course_names = get_course_names(course)
+    tee_options = get_tee_options(course, tees)
     # Retrieve rounds that this golfer has played at this course
     course = Course.objects.get(name=course, tees=tees)
     golfer = User.objects.get(first_name=golfer)
@@ -107,6 +84,7 @@ def course(request, course, tees, golfer):
     scorecards = Paginator(scorecards, 3)
     page_number = request.GET.get('page')
     this_page_scorecard = scorecards.get_page(page_number)
+    # Render template
     context = {'stats': stats, 'avg_scorecard': avg_scorecard,
                'scorecards': this_page_scorecard, 'courses': course_names,
                'tees': tee_options, 'golfer': golfer,
@@ -116,25 +94,33 @@ def course(request, course, tees, golfer):
 
 def vs(request, golfer1, golfer2):
     """Shows stats of one golfer vs another"""
-    # Ensure two golfers were selected
+    # Ensure two distinct golfers were selected
     if golfer1 == golfer2:
         message = "Must select two separate golfers."
         return render(request, "golf/error.html", {'message': message})
-    all_golfers = User.objects.all()  # Offer option to switch to any golfer
+    # Offer option to switch to any golfer
+    all_golfers = User.objects.filter(has_rounds=True)
     # Retrieve all rounds for selected golfers
     golfer_one = User.objects.get(first_name=golfer1)
     golfer_two = User.objects.get(first_name=golfer2)
     golfer_one_rounds = Round.objects.filter(golfer=golfer_one)
     golfer_two_rounds = Round.objects.filter(golfer=golfer_two)
+    # Check if the golfers have played against one another
+    if len(golfer_one_rounds) == 0:
+        message = 'The selected golfers have not played each other.'
+        return render(request, "golf/error.html", {'message': message})
+    # Check which rounds are on the same scorecard / are a match
     golfer_one_match_ids = []
     golfer_two_match_ids = []
-    # Check which rounds are on the same scorecard / are a match
+    # All golfer one matches
     for this_round in golfer_one_rounds:
         if this_round.match not in golfer_one_match_ids:
             golfer_one_match_ids.append(this_round.match)
+    # All golfer two matches
     for this_round in golfer_two_rounds:
         if this_round.match not in golfer_two_match_ids:
             golfer_two_match_ids.append(this_round.match)
+    # Find common matches
     cumulative_match_ids = []
     for id in golfer_one_match_ids:
         if id in golfer_two_match_ids:
@@ -146,10 +132,6 @@ def vs(request, golfer1, golfer2):
     golfer_two_rounds = \
         Round.objects.filter(golfer=golfer_two,
                              match__in=cumulative_match_ids).order_by('-date')
-    # Check if the golfers have played against one another
-    if len(golfer_one_rounds) == 0:
-        message = 'The selected golfers have not played each other.'
-        return render(request, "golf/error.html", {'message': message})
     # Get stats for both golfers
     golfer_one_stats = get_stats(golfer_one_rounds)
     golfer_two_stats = get_stats(golfer_two_rounds)
@@ -191,6 +173,7 @@ def vs(request, golfer1, golfer2):
     scorecards = Paginator(scorecards, 3)
     page_number = request.GET.get('page')
     this_page_scorecard = scorecards.get_page(page_number)
+    # Render template
     context = {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats,
                'scorecards': this_page_scorecard,
                'course_length': range(1, 10), 'all_golfers': all_golfers,
@@ -208,47 +191,36 @@ def post(request):
         if post_success_checker[0]:
             # Return to home page
             return HttpResponseRedirect(reverse('index'))
-        # Failure 
-        else: 
+        # Failure
+        else:
+            # Render failure template
             return render(request, "golf/error.html",
                           {'message': post_success_checker[1]})
     else:
         # Provide a form to post a match
-        # Provide option drop down menu to switch course
-        courses = Course.objects.all()
-        course_names = []
-        for course in courses:
-            if course.name not in course_names:
-                course_names.append(course.name)
-
         # Get default course information (MCC)
         default_course = Course.objects.get(pk=1)
-
+        # Provide option to switch course
+        course_names = get_course_names(default_course.name)
         # Provide option drop down menu to switch tees
         available_courses = Course.objects.filter(name=default_course.name)
         available_tees = []
         for i in range(len(available_courses)):
             available_tees.append(available_courses[i].tees)
-
-        # Get the hole information for this course
-        holes = Hole.objects.filter(course=default_course)
-        yardages = []
-        handicaps = []
-        pars = []
-        for i in range(len(holes)):
-            yardages.append(holes[i].yardage)
-            handicaps.append(holes[i].handicap)
-            pars.append(holes[i].par)
+        # Get course information for scorecard
+        course_info = get_course_info(default_course)
         # Provide option drop down menu to switch golfer
         golfers = User.objects.exclude(pk=1)
         # Create default date as a placeholder date
         now = datetime.now()
         date = now.strftime("%Y-%m-%d")
+        # Render template
         context = {"course_length": range(1, 10),
                    "course_names": course_names,
                    "golfers": golfers, "default_course": default_course,
-                   "yardages": yardages, "handicaps": handicaps, 'pars': pars,
-                   "available_tees": available_tees, "date": date}
+                   "yardages": course_info[2], "handicaps": course_info[1],
+                   'pars': course_info[0], "available_tees": available_tees,
+                   "date": date}
         return render(request, "golf/post.html", context)
 
 
@@ -276,18 +248,9 @@ def post_course(request, name):
 def post_tees(request, name, tees):
     """Allows the user to post a round or match."""
     # Provide option to switch course
-    courses = Course.objects.all()
-    course_names = []
-    for course in courses:
-        if course.name not in course_names:
-            course_names.append(course.name)
-    index = course_names.index(f'{name}')
-    # Default to the requested course
-    course_names.insert(0, course_names.pop(index))
-
+    course_names = get_course_names(name)
     # Get selected course information
     default_course = Course.objects.get(name=name, tees=tees)
-
     # Check if we need to give options for other tees at this course
     available_courses = Course.objects.filter(name=name)
     available_tees = []
@@ -296,24 +259,17 @@ def post_tees(request, name, tees):
     index = available_tees.index(f'{tees}')
     # Default to requested tees
     available_tees.insert(0, available_tees.pop(index))
-
-    # Get the hole information for this course
-    holes = Hole.objects.filter(course=default_course)
-    yardages = []
-    handicaps = []
-    pars = []
-    for i in range(len(holes)):
-        yardages.append(holes[i].yardage)
-        handicaps.append(holes[i].handicap)
-        pars.append(holes[i].par)
+    # Get course information for the given course
+    course_info = get_course_info(default_course)
     golfers = User.objects.exclude(pk=1)
     # Create default date as a placeholder date
     now = datetime.now()
     date = now.strftime("%Y-%m-%d")
     context = {"course_length": range(1, 10), "course_names": course_names,
                "golfers": golfers, "default_course": default_course,
-               "yardages": yardages, 'handicaps': handicaps, "pars": pars,
-               "available_tees": available_tees, "date": date}
+               "yardages": course_info[2], 'handicaps': course_info[1],
+               "pars": course_info[0], "available_tees": available_tees,
+               "date": date}
     return render(request, "golf/post.html", context)
 
 
@@ -355,7 +311,6 @@ def new(request):
         if rating < 60 or rating > 81:
             return render(request, "golf/error.html",
                           {'message': 'Invalid Course Rating'})
-
         # Store yardage information
         yardages = []
         for i in range(1, 19):
@@ -379,7 +334,6 @@ def new(request):
         elif sum(yardages) != int(request.POST['yardages-total']):
             message = "The yardages by hole don't add up to yardage total."
             return render(request, "golf/error.html", {'message': message})
-
         # Store par information
         pars = []
         for i in range(1, 19):
@@ -404,7 +358,6 @@ def new(request):
         elif sum(pars) != int(request.POST['par-total']):
             message = "The pars by hole do not add up to the par total."
             return render(request, "golf/error.html", {'message': message})
-
         # Store handicap information
         handicaps = []
         for i in range(1, 19):
@@ -477,7 +430,7 @@ def edit(request, match_id):
             else:
                 # Error
                 return render(request, "golf/error.html",
-                          {'message': post_success_checker[1]})
+                              {'message': post_success_checker[1]})
         else:
             # Just delete rounds
             rounds = Round.objects.filter(match=match_id)
@@ -497,14 +450,8 @@ def edit(request, match_id):
         default_course = Course.objects.get(name=course_name,
                                             tees=course_tees)
         # Retrieve scorecard information
-        holes = Hole.objects.filter(course=default_course)
-        yardages = []
-        handicaps = []
-        pars = []
-        for i in range(len(holes)):
-            yardages.append(holes[i].yardage)
-            handicaps.append(holes[i].handicap)
-            pars.append(holes[i].par)
+        course_info = get_course_info(default_course)
+        # Get course date
         date = rounds[0].date
         date = date.strftime("%Y-%m-%d")
         # Get golfer strokes
@@ -523,21 +470,20 @@ def edit(request, match_id):
         # Render template
         context = {"course_length": range(1, 10), "course_name": course_name,
                    "golfers": golfers_strokes,
-                   "default_course": default_course, "yardages": yardages,
-                   "handicaps": handicaps, "pars": pars, "date": date,
-                   "match_id": match_id, "tees": course_tees}
+                   "default_course": default_course,
+                   "yardages": course_info[2], "handicaps": course_info[1],
+                   "pars": course_info[0], "date": date, "match_id": match_id,
+                   "tees": course_tees}
         return render(request, "golf/edit.html", context)
 
 
 def login_view(request):
     """Offer login functionality"""
     if request.method == "POST":
-
         # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-
         # Check if authentication successful
         if user is not None:
             login(request, user)
@@ -563,14 +509,12 @@ def register(request):
         username = request.POST["username"]
         email = request.POST["email"]
         first_name = request.POST["first-name"]
-
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
             return render(request, "golf/register.html",
                           {"message": "Passwords must match."})
-
         # Attempt to create a new user
         try:
             user = User.objects.create_user(username, email, password)
