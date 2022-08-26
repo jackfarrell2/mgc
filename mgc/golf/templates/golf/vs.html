@@ -168,6 +168,9 @@
                 <td>{{ scorecard.course.par }}</td>
             </tr>
         </table>
+        <form action="{% url 'edit' scorecard.round.match %}">
+            <button class="btn btn-danger btn-sm" type="submit" id="edit-round" value="Edit Round">Edit Round</button>
+        </form>
         <div class="score-key">
             <!-- Birdie or better -->
             <div class="birdie-key">

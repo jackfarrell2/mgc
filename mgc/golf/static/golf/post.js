@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Validate user data
 function validate() {
+    let test = 1;
     // Ensure all golfers have been selected
     let scorecard = document.getElementsByClassName('scorecard')[0];
     let rows = scorecard.children[0].rows

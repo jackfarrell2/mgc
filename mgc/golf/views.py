@@ -199,16 +199,22 @@ def vs(request, golfer1, golfer2):
     return render(request, "golf/vs.html", context)
 
 
-def post(request):
+def post(request, edit=False):
     """Lets the user post a match. Default to MCC White Tees"""
     if request.method == "POST":
+        # Check if we are editing match or posting it
+        if not edit:
+            if len(request.POST) not in [26, 48, 70, 92]:
+                message = 'There was an error processing your request.'
+                return render(request, "golf/error.html", {'message': message})
+        else:
+            if len(request.POST) not in [27, 49, 71, 93]:
+                message = 'There was an error processing your request.'
+                return render(request, "golf/error.html", {'message': message})
         # Ensure user is logged in
         if not request.user.is_authenticated:
             message = 'You must be logged in to post a match.'
             return render(request, "golf/error.html", message)
-        elif len(request.POST) not in [26, 48, 70, 92]:
-            message = 'There was an error processing your request.'
-            return render(request, "golf/error.html", {'message': message})
         else:
             # Determine golfer count
             golfer_count = 1
@@ -277,15 +283,15 @@ def post(request):
                 course = Course.objects.get(
                     name=request.POST['course'], tees=request.POST['tees'])
                 date = request.POST['round-date']
-                round = Round(golfer=golfer, course=course,
-                              date=date, match=match)
-                round.save()
+                this_round = Round(golfer=golfer, course=course,
+                                   date=date, match=match)
+                this_round.save()
                 # Store each score
                 for j in range(1, len(golfer_scores[i])):
                     score = int(golfer_scores[i][j])
                     hole = Hole.objects.get(course=course, tee=j)
                     this_score = Score(
-                        score=score, golfer=golfer, round=round, hole=hole)
+                        score=score, golfer=golfer, round=this_round, hole=hole)
                     this_score.save()
             # Return to home page
             return HttpResponseRedirect(reverse('index'))
@@ -538,38 +544,34 @@ def new(request):
 
 
 def edit(request, match_id):
-    """Edits a match in the database"""
+    """Edits or deletes a match in the database"""
     if request.method == "POST":
-        
-    else:    
+        # Check user is logged in
+        if not request.user.is_authenticated:
+            message = 'You must be logged in to post a match.'
+            return render(request, "golf/error.html", message)
+        # Check if the user deleted or edited the match
+        if request.POST['action'] == 'Edit Match':
+            # Post the new match
+            post(request, True)
+        # Delete the existing match, only if post succeeds
+        rounds = Round.objects.filter(match=match_id)
+        for this_round in rounds:
+            this_round.delete()
+        return HttpResponseRedirect(reverse('index'))
+    else:
         # Retrieve match rounds
         rounds = Round.objects.filter(match=match_id)
         # Provide course names with the given course selected
         course_name = rounds[0].course.name
         course_tees = rounds[0].course.tees
-        all_courses = Course.objects.all()
-        course_names = []
-        for course in all_courses:
-            if course.name not in course_names:
-                course_names.append(course.name)
-        # Select the given course
-        course_name_index = course_names.index(course_name)
-        course_names.insert(0, course_names.pop(course_name_index))
-        context = {'course_names': course_names}
-        # Retrieve all golfers 
-        all_golfers = User.objects.all()
-        # Retrieve selected golfers  
+        # Retrieve selected golfers
         golfers = []
         for this_round in rounds:
             golfers.append(this_round.golfer)
         default_course = Course.objects.get(name=course_name,
                                             tees=course_tees)
-        available_courses = Course.objects.filter(name=course_name)
-        available_tees = []
-        for i in range(len(available_courses)):
-            available_tees.append(available_courses[i].tees)
-        index = available_tees.index(f'{course_tees}')
-        available_tees.insert(0, available_tees.pop(index))
+        # Retrieve scorecard information
         holes = Hole.objects.filter(course=default_course)
         yardages = []
         handicaps = []
@@ -585,19 +587,20 @@ def edit(request, match_id):
         for golfer_round in rounds:
             golfer_strokes = []
             golfer_scores = Score.objects.filter(round=golfer_round)
+            # Store golfer scores
             for score in golfer_scores:
-                golfer_strokes.append(score.score) 
+                golfer_strokes.append(score.score)
             golfer_strokes.append(sum(golfer_strokes[9:]))
             golfer_strokes.append(sum(golfer_strokes[:-1]))
             golfer_strokes.insert(9, sum(golfer_strokes[:9]))
             golfer_strokes.insert(0, golfer_round.golfer.first_name)
             golfers_strokes.append(golfer_strokes)
-
-            
-        context = {"course_length": range(1, 10), "course_names": course_names,
-               "golfers": golfers_strokes, "all_golfers": all_golfers, "default_course": default_course,
-               "yardages": yardages, 'handicaps': handicaps, "pars": pars,
-               "available_tees": available_tees, "date": date, "match_id": match_id}
+        # Render template
+        context = {"course_length": range(1, 10), "course_name": course_name,
+                   "golfers": golfers_strokes,
+                   "default_course": default_course, "yardages": yardages,
+                   "handicaps": handicaps, "pars": pars, "date": date,
+                   "match_id": match_id, "tees": course_tees}
         return render(request, "golf/edit.html", context)
 
 

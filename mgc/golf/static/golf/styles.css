@@ -128,7 +128,8 @@ th {
 
 #post-match,
 #new-course-button,
-#submit-button {
+#submit-button,
+#edit-match {
     margin-left: 10px;
     background-color: #198754;
     border-color: #198754;
@@ -365,8 +366,9 @@ td.stat {
 }
 
 .score-key {
-    width: 100%;
+    width: 75%;
     display: flex;
+    margin-right: 0px;
 }
 
 .birdie-key,
@@ -381,4 +383,30 @@ td.stat {
 
 .scorecard-table {
     margin-bottom: 5px;
+}
+
+.edit-match-field {
+    width: 100%;
+    border: 0px;
+    outline: none;
+}
+
+.edit-match-course {
+    width: 75%;
+    float: left;
+    outline: none;
+}
+
+#delete-match,
+#edit-match {
+    margin: 10px;
+}
+
+#edit-round {
+    float: right;
+    margin: 0px;
+    height: 20px;
+    font-size: 12px;
+    padding: 5px;
+    padding-top: 0px;
 }

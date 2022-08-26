@@ -9,11 +9,7 @@
     <!-- Select a course and date -->
     <div id="general-info">
         <!-- Course -->
-        <select name="course" id="course">
-            {% for course_name in course_names %}
-            <option value="{{ course_name }}">{{ course_name }}</option>
-            {% endfor %}
-        </select>
+        <input class="edit-match-field edit-match-course" type=text name="course" value="{{ course_name }}" readonly>
         <!-- Date-->
         <input id="date" type="date" name="round-date" value="{{ date }}" required>
     </div>
@@ -33,13 +29,7 @@
         </tr>
         <!-- Yardages -->
         <tr class="yardages-row">
-            <th class="scorecard-header">
-                <select name="tees" id="tees">
-                    {% for available_tee in available_tees %}
-                    <option value="{{ available_tee }}">{{ available_tee }}</option>
-                    {% endfor %}
-                </select>
-            </th>
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="tees" value="{{ tees }}" readonly></th>
             {% for yardage in yardages|slice:":9" %}
             <td>{{ yardage }}</td>
             {% endfor %}
@@ -66,26 +56,16 @@
         <!-- Scores -->
         {% for golfer in golfers %}
         <tr class="scores-row" id="strokes">
-            <th class="scorecard-header">
-                <select id="golfer" class="golfer" required>
-                    {% for each_golfer in all_golfers %}
-                    {% if each_golfer.first_name == golfer.0 %}
-                    <option selected value="{{ golfer }}">{{ each_golfer }}</option>
-                    {% else %}
-                    <option value="{{ golfer }}">{{ each_golfer }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </th>
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="golfer-{{ forloop.counter }}" value="{{ golfer.0 }}" readonly></th>
             {% for score in golfer|slice:"1:10" %}
-            <td><input type='number' min='1' max='9' value="{{ score }}" required></td>
+            <td><input name="{{ golfer.0 }}-{{ forloop.counter }}"type='number' min='1' max='9' value="{{ score }}" required></td>
             {% endfor %}
-            <td><input type='number' min='9' max='100' value="{{ golfer.10 }}" required></td>
+            <td><input name="{{ golfer.0 }}-10" type='number' min='9' max='100' value="{{ golfer.10 }}" required></td>
             {% for score in golfer|slice:"11:20" %}
-            <td><input type='number' min='1' max='9' value="{{ score }}" required></td>
+            <td><input name="{{ golfer.0}}-{{ forloop.counter|add:'10' }}" type='number' min='1' max='9' value="{{ score }}" required></td>
             {% endfor %}
-            <td><input type='number' min='9' max='100' value="{{ golfer.20 }}" required></td>
-            <td><input type='number' min='18' max='150' value="{{ golfer.21 }}" required></td>
+            <td><input name="{{ golfer.0 }}-20" type='number' min='9' max='100' value="{{ golfer.20 }}" required></td>
+            <td><input name="{{ golfer.0 }}-21" type='number' min='18' max='150' value="{{ golfer.21 }}" required></td>
         </tr>
         {% endfor %}
         <!-- Pars -->
@@ -102,18 +82,12 @@
             <td>{{ default_course.par }}</td>
         </tr>
     </table>
-    <!-- Buttons to add golfer, course, or tee -->
-    <div id="buttons">
-        <button class="btn btn-warning btn-med" id="add-golfer" type="button">Add Golfer</button>
-        <a href="{% url 'new' %}"><button class="btn btn-warning btn-med" id="add-course" type="button">Add a New Course
-                or Tee</button></a>
-    </div>
-    <!-- <input class="btn btn-danger btn-med" id="delete-match" type="submit" value="Delete Match"> -->
-    <input class="btn btn-success btn-med" id="post-match" type="submit" value="Edit Match">
+    <input class="btn btn-danger btn-med" name="action" id="delete-match" type="submit" value="Delete Match">
+    <input class="btn btn-success btn-med" name="action" id="edit-match" type="submit" value="Edit Match">
 </form>
 
 {% endblock %}
 
 {% block script %}
-<script src="{% static 'golf/post.js' %}"></script>
+<script src="{% static 'golf/edit.js' %}"></script>
 {% endblock %}

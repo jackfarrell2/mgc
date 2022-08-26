@@ -124,29 +124,33 @@
             <td>{{ scorecard.course.par }}</td>
         </tr>
     </table>
+    <!-- Edit Button -->
+    <form action="{% url 'edit' scorecard.round.match %}">
+        <button class="btn btn-danger btn-sm" type="submit" id="edit-round" value="Edit Round">Edit Round</button>
+    </form>
     <!-- Score Keys -->
-    <div class="score-key">
-        <!-- Birdie or better -->
-        <div class="birdie-key">
-            <div class="birdie-box"></div>
-            <span class="score-label">Birdie or Better</span>
+        <div class="score-key">
+            <!-- Birdie or better -->
+            <div class="birdie-key">
+                <div class="birdie-box"></div>
+                <span class="score-label">Birdie or Better</span>
+            </div>
+            <!-- Par -->
+            <div class="par-key">
+                <div class="par-box"></div>
+                <span class="score-label">Par</span>
+            </div>
+            <!-- Double Bogey -->
+            <div class="double-bogey-key">
+                <div class="double-bogey-box"></div>
+                <span class="score-label">Double Bogey</span>
+            </div>
+            <!-- Triple or worse -->
+            <div class="triple-or-worse-key">
+                <div class="triple-or-worse-box"></div>
+                <span class="score-label">Triple Bogey or Worse</span>
+            </div>
         </div>
-        <!-- Par -->
-        <div class="par-key">
-            <div class="par-box"></div>
-            <span class="score-label">Par</span>
-        </div>
-        <!-- Double Bogey -->
-        <div class="double-bogey-key">
-            <div class="double-bogey-box"></div>
-            <span class="score-label">Double Bogey</span>
-        </div>
-        <!-- Triple or worse s-->
-        <div class="triple-or-worse-key">
-            <div class="triple-or-worse-box"></div>
-            <span class="score-label">Triple Bogey or Worse</span>
-        </div>
-    </div>
 </div>
 {% endfor %}
 <!-- Pagination -->
