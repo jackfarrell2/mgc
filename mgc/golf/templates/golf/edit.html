@@ -13,6 +13,8 @@
         <!-- Date-->
         <input id="date" type="date" name="round-date" value="{{ date }}" required>
     </div>
+    <!-- Number of golfers -->
+    <input type="hidden" name="number-of-golfers" id="number-of-golfers">
     <table class="scorecard">
         <!-- Holes -->
         <tr class="holes-row">
@@ -29,7 +31,8 @@
         </tr>
         <!-- Yardages -->
         <tr class="yardages-row">
-            <th class="scorecard-header"><input class="edit-match-field" type=text name="tees" value="{{ tees }}" readonly></th>
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="tees" value="{{ tees }}"
+                    readonly></th>
             {% for yardage in yardages|slice:":9" %}
             <td>{{ yardage }}</td>
             {% endfor %}
@@ -56,13 +59,16 @@
         <!-- Scores -->
         {% for golfer in golfers %}
         <tr class="scores-row" id="strokes">
-            <th class="scorecard-header"><input class="edit-match-field" type=text name="golfer-{{ forloop.counter }}" value="{{ golfer.0 }}" readonly></th>
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="golfer-{{ forloop.counter }}"
+                    value="{{ golfer.0 }}" readonly></th>
             {% for score in golfer|slice:"1:10" %}
-            <td><input name="{{ golfer.0 }}-{{ forloop.counter }}"type='number' min='1' max='9' value="{{ score }}" required></td>
+            <td><input name="{{ golfer.0 }}-{{ forloop.counter }}" type='number' min='1' max='9' value="{{ score }}"
+                    required></td>
             {% endfor %}
             <td><input name="{{ golfer.0 }}-10" type='number' min='9' max='100' value="{{ golfer.10 }}" required></td>
             {% for score in golfer|slice:"11:20" %}
-            <td><input name="{{ golfer.0}}-{{ forloop.counter|add:'10' }}" type='number' min='1' max='9' value="{{ score }}" required></td>
+            <td><input name="{{ golfer.0}}-{{ forloop.counter|add:'10' }}" type='number' min='1' max='9'
+                    value="{{ score }}" required></td>
             {% endfor %}
             <td><input name="{{ golfer.0 }}-20" type='number' min='9' max='100' value="{{ golfer.20 }}" required></td>
             <td><input name="{{ golfer.0 }}-21" type='number' min='18' max='150' value="{{ golfer.21 }}" required></td>

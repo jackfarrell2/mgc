@@ -126,13 +126,13 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 })
 
-// Validate user data
+// Validate user data and count golfers
 function validate() {
-    let test = 1;
     // Ensure all golfers have been selected
     let scorecard = document.getElementsByClassName('scorecard')[0];
     let rows = scorecard.children[0].rows
     let golferCount = rows.length - 4;
+    document.querySelector('#number-of-golfers').value = golferCount;
     for (var i = 0; i < golferCount; i++) {
         if (rows[i + 3].children[0].children[0].value === 'Golfer') {
             alert('Please select a golfer name for each golfer.');

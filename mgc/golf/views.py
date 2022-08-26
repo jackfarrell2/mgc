@@ -1,5 +1,4 @@
 from datetime import datetime
-import this
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -7,8 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import User, Course, Hole, Score, Round
-from golf.helpers import get_stats, get_scorecard, \
-    get_course_avg_scorecard, get_vs_scorecards, add_course
+from golf.helpers import delete_rounds, get_stats, get_scorecard, \
+    get_course_avg_scorecard, get_vs_scorecards, add_course, \
+    post_match
 
 
 def index(request):
@@ -199,102 +199,19 @@ def vs(request, golfer1, golfer2):
     return render(request, "golf/vs.html", context)
 
 
-def post(request, edit=False):
+def post(request):
     """Lets the user post a match. Default to MCC White Tees"""
     if request.method == "POST":
-        # Check if we are editing match or posting it
-        if not edit:
-            if len(request.POST) not in [26, 48, 70, 92]:
-                message = 'There was an error processing your request.'
-                return render(request, "golf/error.html", {'message': message})
-        else:
-            if len(request.POST) not in [27, 49, 71, 93]:
-                message = 'There was an error processing your request.'
-                return render(request, "golf/error.html", {'message': message})
-        # Ensure user is logged in
-        if not request.user.is_authenticated:
-            message = 'You must be logged in to post a match.'
-            return render(request, "golf/error.html", message)
-        else:
-            # Determine golfer count
-            golfer_count = 1
-            golfer_scores = []
-            if len(request.POST) == 48:
-                golfer_count = 2
-            if len(request.POST) == 70:
-                golfer_count = 3
-            if len(request.POST) == 92:
-                golfer_count = 4
-            # Parse all the scores
-            for i in range(golfer_count):
-                golfer_score = []
-                golfer = request.POST[f'golfer-{i + 1}']
-                if golfer == 'Golfer':
-                    message = 'A golfer name was not selected.'
-                    return render(request, "golf/error.html",
-                                  {'message': message})
-                golfer_score.append(golfer)
-                for i in range(21):
-                    # Ensure user submitted a valid integer
-                    try:
-                        this_score = int(request.POST[f'{golfer}-{i + 1}'])
-                    except:
-                        msg = 'All scores entered should be single numbers.'
-                        return render(request, "golf/error.html",
-                                      {'message': msg})
-                    golfer_score.append(this_score)
-                # Ensure front nine adds up
-                if sum(golfer_score[1:10]) != golfer_score[10]:
-                    message = f"{golfer}'s front nine scores do not add up."
-                    return render(request, "golf/error.html",
-                                  {'message': message})
-                # Ensure back nine adds up
-                elif sum(golfer_score[11:20]) != golfer_score[20]:
-                    message = f"{golfer}'s back nine scores do not add up."
-                    return render(request, "golf/error.html",
-                                  {'message': message})
-                # Clean up golfers scores
-                golfer_score.pop(10)
-                golfer_score.pop()
-                golfer_score.pop()
-                golfer_scores.append(golfer_score)
-
-                # Ensure all scores are between 1 and 9
-                for i in range(len(golfer_score)):
-                    if i != 0:
-                        if golfer_score[i] < 1 or golfer_score[i] > 9:
-                            beginning = f"{golfer} has a hole score"
-                            end = "less than 1 or greater than 9"
-                            message = beginning + end
-                            return render(request, "golf/error.html",
-                                          {'message': message})
-            # Store round information
-            match = 0  # Default to match 0 for solo rounds
-            # Create new match id
-            if golfer_count != 1:
-                highest_matches =  \
-                    Round.objects.all().order_by('-match').values()
-                highest_match = highest_matches[0]['match']
-                match = highest_match + 1
-            # Save a round for each golfer
-            for i in range(len(golfer_scores)):
-                golfer_name = golfer_scores[i][0]
-                golfer = User.objects.get(first_name=golfer_name)
-                course = Course.objects.get(
-                    name=request.POST['course'], tees=request.POST['tees'])
-                date = request.POST['round-date']
-                this_round = Round(golfer=golfer, course=course,
-                                   date=date, match=match)
-                this_round.save()
-                # Store each score
-                for j in range(1, len(golfer_scores[i])):
-                    score = int(golfer_scores[i][j])
-                    hole = Hole.objects.get(course=course, tee=j)
-                    this_score = Score(
-                        score=score, golfer=golfer, round=this_round, hole=hole)
-                    this_score.save()
+        # Post the match
+        post_success_checker = post_match(request)
+        # Success
+        if post_success_checker[0]:
             # Return to home page
             return HttpResponseRedirect(reverse('index'))
+        # Failure 
+        else: 
+            return render(request, "golf/error.html",
+                          {'message': post_success_checker[1]})
     else:
         # Provide a form to post a match
         # Provide option drop down menu to switch course
@@ -546,20 +463,28 @@ def new(request):
 def edit(request, match_id):
     """Edits or deletes a match in the database"""
     if request.method == "POST":
-        # Check user is logged in
-        if not request.user.is_authenticated:
-            message = 'You must be logged in to post a match.'
-            return render(request, "golf/error.html", message)
-        # Check if the user deleted or edited the match
+        # Add the edited match and delete the unedited match
+        # Check if we are deleting or editing match
         if request.POST['action'] == 'Edit Match':
-            # Post the new match
-            post(request, True)
-        # Delete the existing match, only if post succeeds
-        rounds = Round.objects.filter(match=match_id)
-        for this_round in rounds:
-            this_round.delete()
-        return HttpResponseRedirect(reverse('index'))
+            # Try to post the edited match
+            post_success_checker = post_match(request)
+            # Successfully posted edited match
+            if post_success_checker[0]:
+                # Delete the unedited round
+                rounds = Round.objects.filter(match=match_id)
+                delete_rounds(rounds)
+                return HttpResponseRedirect(reverse('index'))
+            else:
+                # Error
+                return render(request, "golf/error.html",
+                          {'message': post_success_checker[1]})
+        else:
+            # Just delete rounds
+            rounds = Round.objects.filter(match=match_id)
+            delete_rounds(rounds)
+            return HttpResponseRedirect(reverse('index'))
     else:
+        # Display the scorecard for the given match
         # Retrieve match rounds
         rounds = Round.objects.filter(match=match_id)
         # Provide course names with the given course selected

@@ -305,3 +305,92 @@ def add_course(request, pars: list, yardages: list, handicaps: list, new=True):
                          par=pars[i], yardage=yardages[i],
                          handicap=handicaps[i])
         this_hole.save()
+
+
+def delete_rounds(rounds):
+    """Deletes golfer rounds from the database"""
+    for this_round in rounds:
+        this_round.delete()
+    return True
+
+
+def post_match(request) -> tuple:
+    """Validates input and posts a match"""
+    # Ensure user is logged in
+    if not request.user.is_authenticated:
+        message = 'You must be logged in to post a match.'
+        return (False, message)
+    else:
+        # Determine golfer count
+        try:
+            golfer_count = int(request.POST['number-of-golfers'])
+        except:
+            message = 'There was an error processing your request.'
+            return (False, message)
+        if golfer_count > 4 or golfer_count < 1:
+            message = 'There was an error processing your request.'
+            return (False, message)
+        golfer_scores = []
+        # Parse all the scores
+        for i in range(golfer_count):
+            golfer_score = []
+            golfer = request.POST[f'golfer-{i + 1}']
+            if golfer == 'Golfer':
+                message = 'A golfer name was not selected.'
+                return (False, message)
+            golfer_score.append(golfer)
+            for i in range(21):
+                # Ensure user submitted a valid integer
+                try:
+                    this_score = int(request.POST[f'{golfer}-{i + 1}'])
+                except:
+                    message = 'All scores entered should be single numbers.'
+                    return (False, message)
+                golfer_score.append(this_score)
+            # Ensure front nine adds up
+            if sum(golfer_score[1:10]) != golfer_score[10]:
+                message = f"{golfer}'s front nine scores do not add up."
+                return (False, message)
+            # Ensure back nine adds up
+            elif sum(golfer_score[11:20]) != golfer_score[20]:
+                message = f"{golfer}'s back nine scores do not add up."
+                return (False, message)
+            # Clean up golfers scores
+            golfer_score.pop(10)
+            golfer_score.pop()
+            golfer_score.pop()
+            golfer_scores.append(golfer_score)
+            # Ensure all scores are between 1 and 9
+            for i in range(len(golfer_score)):
+                if i != 0:
+                    if golfer_score[i] < 1 or golfer_score[i] > 9:
+                        beginning = f"{golfer} has a hole score"
+                        end = "less than 1 or greater than 9"
+                        message = beginning + end
+                        return (False, message)
+        # Store round information
+        match = 0  # Default to match 0 for solo rounds
+        # Create new match id
+        if golfer_count != 1:
+            highest_matches =  \
+                Round.objects.all().order_by('-match').values()
+            highest_match = highest_matches[0]['match']
+            match = highest_match + 1
+        # Save a round for each golfer
+        for i in range(len(golfer_scores)):
+            golfer_name = golfer_scores[i][0]
+            golfer = User.objects.get(first_name=golfer_name)
+            course = Course.objects.get(
+                name=request.POST['course'], tees=request.POST['tees'])
+            date = request.POST['round-date']
+            this_round = Round(golfer=golfer, course=course,
+                                date=date, match=match)
+            this_round.save()
+            # Store each score
+            for j in range(1, len(golfer_scores[i])):
+                score = int(golfer_scores[i][j])
+                hole = Hole.objects.get(course=course, tee=j)
+                this_score = Score(
+                    score=score, golfer=golfer, round=this_round, hole=hole)
+                this_score.save()
+        return (True, "Success")
