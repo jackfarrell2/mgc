@@ -111,7 +111,7 @@ def vs(request, golfer1, golfer2):
     golfer_two_rounds = Round.objects.filter(golfer=golfer_two, date__year = 2020)
     # Check both golfers have playes a round in 2020
     if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
-        message = 'The selected golfers have not played each other.'
+        message = 'At least one golfer has not played a round this year.'
         return render(request, "golf/error.html", {'message': message})
     # Check which rounds are on the same scorecard / are a match
     golfer_one_match_ids = []

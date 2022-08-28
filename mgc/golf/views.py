@@ -19,11 +19,11 @@ def index(request):
     all_stats = []
     for golfer in all_golfers:
         # Exclude solo rounds
-        golfers_rounds = Round.objects.filter(golfer=golfer).exclude(match=0)
-        stats = get_stats(golfers_rounds)
-        all_stats.append(stats)
+        golfers_rounds = Round.objects.filter(golfer=golfer, date__year = 2022).exclude(match=0)
+        if len(golfers_rounds) > 0:
+            stats = get_stats(golfers_rounds)
+            all_stats.append(stats)
     # Sort stats by average score
-
     def avg_score(golfers_stats):
         return golfers_stats[2]
     all_stats.sort(key=avg_score)
@@ -36,8 +36,9 @@ def golfer(request, golfer):
     """Shows a golfers rounds and statistics, including solo rounds"""
     # Get golfers statistics
     this_golfer = User.objects.get(first_name=golfer)
-    golfer_rounds = Round.objects.filter(golfer=this_golfer).order_by('-date')
-    stats = get_stats(golfer_rounds)
+    golfer_rounds = Round.objects.filter(golfer=this_golfer, date__year = 2022).order_by('-date')
+    if len(golfer_rounds) > 0:
+        stats = get_stats(golfer_rounds)
     # Only offer the option to switch to golfers that have played a round
     all_golfers = User.objects.filter(has_rounds=True)
     # Gather a scorecard for every round the golfer has played
@@ -67,7 +68,8 @@ def course(request, course, tees, golfer):
     golfer = User.objects.get(first_name=golfer)
     # Include solo rounds
     rounds = Round.objects.filter(golfer=golfer,
-                                  course=course).order_by('-date')
+                                  course=course,
+                                  date__year = 2022).order_by('-date')
     # Ensure the golfer has played a round at this course
     if len(rounds) == 0:
         message = 'The selected golfer has not played the selected course'
@@ -103,10 +105,10 @@ def vs(request, golfer1, golfer2):
     # Retrieve all rounds for selected golfers
     golfer_one = User.objects.get(first_name=golfer1)
     golfer_two = User.objects.get(first_name=golfer2)
-    golfer_one_rounds = Round.objects.filter(golfer=golfer_one)
-    golfer_two_rounds = Round.objects.filter(golfer=golfer_two)
-    # Check if the golfers have played against one another
-    if len(golfer_one_rounds) == 0:
+    golfer_one_rounds = Round.objects.filter(golfer=golfer_one, date__year = 2022)
+    golfer_two_rounds = Round.objects.filter(golfer=golfer_two, date__year = 2022)
+    # Check both golfers have playes a round in 2022
+    if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
         message = 'The selected golfers have not played each other.'
         return render(request, "golf/error.html", {'message': message})
     # Check which rounds are on the same scorecard / are a match
@@ -125,12 +127,15 @@ def vs(request, golfer1, golfer2):
     for id in golfer_one_match_ids:
         if id in golfer_two_match_ids:
             cumulative_match_ids.append(id)
+    if len(cumulative_match_ids) == 0:
+        message = 'The selected golfers have not played each other.'
+        return render(request, "golf/error.html", {'message': message})
     # Retrieve golfer rounds that are a match between the two golfers
     golfer_one_rounds = \
-        Round.objects.filter(golfer=golfer_one,
+        Round.objects.filter(golfer=golfer_one, date__year = 2022,
                              match__in=cumulative_match_ids).order_by('-date')
     golfer_two_rounds = \
-        Round.objects.filter(golfer=golfer_two,
+        Round.objects.filter(golfer=golfer_two, date__year = 2022,
                              match__in=cumulative_match_ids).order_by('-date')
     # Get stats for both golfers
     golfer_one_stats = get_stats(golfer_one_rounds)

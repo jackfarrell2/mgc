@@ -17,6 +17,7 @@
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
     <link href="{% static 'golf/styles.css' %}" rel="stylesheet">
+    <script src="{% static 'golf/layout.js' %}"></script>
     <title>{% block title %}MGC{% endblock %}</title>
     {% block script %}
     {% endblock %}
@@ -24,25 +25,20 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" id="nav">
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <div id="name-and-year">
             <a class="navbar-brand" href="{% url 'index' %}">Manchester Golf Club</a>
-            <li class="nav-item dropdown archive">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false">
-                    Change Year
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <div class="grid years"><a class="dropdown-item" id="year" href="#">2022</a></div>
-                    <div class="grid years"><a class="dropdown-item" id="year" href="#">2020</a></div>
-                </div>
+            <select name="year" id="year">
+                <option>2022</option>
+                <option>2020</option>
+            </select>
             </li>
         </div>
         <div>
             <ul class="navbar-nav me-auto mt-2">
-                <li class="nav-item"><a class="nav-link" href="{% url 'golfer' 'Jack' %}">Golfers </a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'golfer' 'Nick' %}">Golfers </a></li>
                 <li class="nav-item"><a class="nav-link"
-                        href="{% url 'course' 'Manchester Country Club' 'White' 'Jack' %}">Courses </a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'vs' 'Jack' 'Nick' %}">Vs </a></li>
+                        href="{% url 'course' 'Manchester Country Club' 'White' 'Nick' %}">Courses </a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'vs' 'Quincy' 'Tyler' %}">Vs </a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'post' %}">Post a Match </a></li>
                 {% if not user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Log In </a></li>

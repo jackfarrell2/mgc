@@ -2,12 +2,11 @@
 {% load static %}
 
 {% block title %}
-    MGC: Error
+MGC: Error
 {% endblock %}
 
 {% block main %}
-    <h1>{{ message }}</h1>
-    <img style="width:400px; height:auto;" class="resize" alt="Golfer" class="border img-fluid"
-        src="{% static 'golf/nick_green_jacket.jpeg' %}"
-        title="Golfer"
+<h1>{{ message }}</h1>
+<img style="width:400px; height:auto;" class="resize" alt="Golfer" class="border img-fluid"
+    src="{% static 'golf/nick_green_jacket.jpeg' %}" title="Golfer">
 {% endblock %}

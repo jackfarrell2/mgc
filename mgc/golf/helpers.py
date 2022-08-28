@@ -73,8 +73,8 @@ def get_stats(rounds):
     best_score_to_par = par_shift(
         score_tracker['best_score'])  # Calc best score to par
     best_score = f"{best_score_to_par} ({best_score})"
-    avg_par = round(total_scores / round_amount, 2)  # Calc average par
-    avg_score = round(avg_par + 72, 2)  # Calc average score
+    avg_par = round(total_scores / round_amount)  # Calc average par
+    avg_score = round(avg_par + 72)  # Calc average score
     avg_par = par_shift(avg_par)  # Calc average par
     eagles = score_tracker['eagle_counter']  # Count eagles
     # Calc score types per round
