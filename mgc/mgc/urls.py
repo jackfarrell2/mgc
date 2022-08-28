@@ -18,7 +18,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('golf.urls'))
+    path('2020/', include('Year2020.urls')),
+    path('', include('golf.urls')),
 ]
 
 handler404 = 'golf.views.page_not_found_view'

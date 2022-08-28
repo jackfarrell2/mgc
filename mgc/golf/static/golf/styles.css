@@ -7,10 +7,22 @@
 #nav {
     background-color: #198754;
     height: 80px;
+    list-style: none;
 }
+
+.show {
+    padding: 0px;
+}
+
 
 #nav a {
     color: white;
+}
+
+a.years {
+    background-color: white;
+    color: #198754;
+
 }
 
 li .nav-item {

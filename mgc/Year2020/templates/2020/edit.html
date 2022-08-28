@@ -1,0 +1,99 @@
+{% extends "golf/layout.html" %}
+{% load static %}
+
+{% block title %}MGC: Edit{% endblock %}
+
+{% block main %}
+<form class="grid" action="{% url 'edit' match_id %}" method="post" id="scorecard" onsubmit="return validate();">
+    {% csrf_token %}
+    <!-- Select a course and date -->
+    <div id="general-info">
+        <!-- Course -->
+        <input class="edit-match-field edit-match-course" type=text name="course" value="{{ course_name }}" readonly>
+        <!-- Date-->
+        <input id="date" type="date" name="round-date" value="{{ date }}" required>
+    </div>
+    <!-- Number of golfers -->
+    <input type="hidden" name="number-of-golfers" id="number-of-golfers">
+    <table class="scorecard">
+        <!-- Holes -->
+        <tr class="holes-row">
+            <th class="scorecard-header"><strong>Hole</strong></th>
+            {% for i in course_length %}
+            <td>{{ i }}</td>
+            {% endfor %}
+            <td>OUT</td>
+            {% for i in course_length %}
+            <td>{{ i|add:"9" }}</td>
+            {% endfor %}
+            <td>IN</td>
+            <td>TOT</td>
+        </tr>
+        <!-- Yardages -->
+        <tr class="yardages-row">
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="tees" value="{{ tees }}"
+                    readonly></th>
+            {% for yardage in yardages|slice:":9" %}
+            <td>{{ yardage }}</td>
+            {% endfor %}
+            <td>{{ default_course.front_yardage }}</td>
+            {% for yardage in yardages|slice:"9:" %}
+            <td>{{ yardage }}</td>
+            {% endfor %}
+            <td>{{ default_course.back_yardage }}</td>
+            <td>{{ default_course.yardage }}</td>
+        </tr>
+        <!-- Handicaps -->
+        <tr class="handicap-row">
+            <th class="scorecard-header">Handicap</th>
+            {% for handicap in handicaps|slice:":9" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            {% for handicap in handicaps|slice:"9:" %}
+            <td>{{ handicap }}</td>
+            {% endfor %}
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- Scores -->
+        {% for golfer in golfers %}
+        <tr class="scores-row" id="strokes">
+            <th class="scorecard-header"><input class="edit-match-field" type=text name="golfer-{{ forloop.counter }}"
+                    value="{{ golfer.0 }}" readonly></th>
+            {% for score in golfer|slice:"1:10" %}
+            <td><input name="{{ golfer.0 }}-{{ forloop.counter }}" type='number' min='1' max='9' value="{{ score }}"
+                    required></td>
+            {% endfor %}
+            <td><input name="{{ golfer.0 }}-10" type='number' min='9' max='100' value="{{ golfer.10 }}" required></td>
+            {% for score in golfer|slice:"11:20" %}
+            <td><input name="{{ golfer.0}}-{{ forloop.counter|add:'10' }}" type='number' min='1' max='9'
+                    value="{{ score }}" required></td>
+            {% endfor %}
+            <td><input name="{{ golfer.0 }}-20" type='number' min='9' max='100' value="{{ golfer.20 }}" required></td>
+            <td><input name="{{ golfer.0 }}-21" type='number' min='18' max='150' value="{{ golfer.21 }}" required></td>
+        </tr>
+        {% endfor %}
+        <!-- Pars -->
+        <tr class="pars-row">
+            <th class="scorecard-header">Par</th>
+            {% for par in pars|slice:":9" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ default_course.front_par }}</td>
+            {% for par in pars|slice:"9:" %}
+            <td>{{ par }}</td>
+            {% endfor %}
+            <td>{{ default_course.back_par }}</td>
+            <td>{{ default_course.par }}</td>
+        </tr>
+    </table>
+    <input class="btn btn-danger btn-med" name="action" id="delete-match" type="submit" value="Delete Match">
+    <input class="btn btn-success btn-med" name="action" id="edit-match" type="submit" value="Edit Match">
+</form>
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'golf/edit.js' %}"></script>
+{% endblock %}

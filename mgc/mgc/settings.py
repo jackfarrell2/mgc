@@ -34,6 +34,7 @@ AUTH_USER_MODEL = "golf.User"
 
 INSTALLED_APPS = [
     'golf',
+    'Year2020',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
