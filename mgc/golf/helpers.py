@@ -1,4 +1,6 @@
 from .models import Score, Hole, Course, Round, User
+from datetime import datetime
+from django.db.models import F
 
 
 def abbreviate_course(course_name: str) -> str:
@@ -69,6 +71,7 @@ def get_stats(rounds):
         # Replace best round if applicable
         if round_score < score_tracker['best_score']:
             score_tracker['best_score'] = round_score
+    # Calc stats
     best_score = score_tracker['best_score'] + 72  # Calc best score
     best_score_to_par = par_shift(
         score_tracker['best_score'])  # Calc best score to par
@@ -368,13 +371,11 @@ def post_match(request) -> tuple:
                         message = beginning + end
                         return (False, message)
         # Store round information
-        match = 0  # Default to match 0 for solo rounds
-        # Create new match id
-        if golfer_count != 1:
-            highest_matches =  \
-                Round.objects.all().order_by('-match').values()
-            highest_match = highest_matches[0]['match']
-            match = highest_match + 1
+        # Create new match_id
+        highest_matches =  \
+            Round.objects.all().order_by('-match').values()
+        highest_match = highest_matches[0]['match']
+        match = highest_match + 1
         # Save a round for each golfer
         for i in range(len(golfer_scores)):
             golfer_name = golfer_scores[i][0]
@@ -400,7 +401,7 @@ def post_match(request) -> tuple:
 
 def get_course_names(course: str) -> list:
     """Returns all unique course names"""
-    courses = Course.objects.all()
+    courses = Course.objects.all().order_by('name')
     course_names = []
     for this_course in courses:
         if this_course.name not in course_names:
@@ -437,3 +438,14 @@ def get_course_info(course) -> list:
         pars.append(holes[i].par)
     course_info = [pars, handicaps, yardages]
     return course_info
+
+
+def get_bart_birdies() -> int:
+    """Returns how many days since Bart's last birdie"""
+    bart = User.objects.get(pk=7)
+    barts_most_recent_birdie = Score.objects.filter(
+        golfer=bart, score=F('hole__par')-1).order_by(
+            '-round__date')[0].round.date
+    now = datetime.now().date()
+    delta = now - barts_most_recent_birdie
+    return delta.days

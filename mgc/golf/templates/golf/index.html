@@ -2,6 +2,10 @@
 {% load static %}
 {% block title %}MGC: Standings{% endblock %}
 {% block main %}
+<!-- Champion -->
+<div class="grid" id="champion-indicator">
+    <h7>Current Green Jacket Holder: <strong>Nick</strong></h7>
+</div>
     <!-- Stats -->
     <div id="content" class="grid container-fluid">
         <table id="stats" class="table table-bordered table-hover standings">
@@ -32,5 +36,8 @@
             </tr>
             {% endfor %}
         </table>
+</div>
+<div id="bart-birdie">
+    <h7>Days Since Bart has birdied: {{ bart_birdies }}</h7>
 </div>
 {% endblock %}

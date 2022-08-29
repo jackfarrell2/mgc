@@ -147,6 +147,29 @@
             <td>{{ avg_scorecard.course.par }}</td>
         </tr>
     </table>
+    <!-- Score Keys -->
+    <div class="score-key">
+        <!-- Birdie or better -->
+        <div class="birdie-key">
+            <div class="birdie-box"></div>
+            <span class="score-label">Birdie or Better</span>
+        </div>
+        <!-- Par -->
+        <div class="par-key">
+            <div class="par-box"></div>
+            <span class="score-label">Par</span>
+        </div>
+        <!-- Double Bogey -->
+        <div class="double-bogey-key">
+            <div class="double-bogey-box"></div>
+            <span class="score-label">Double Bogey</span>
+        </div>
+        <!-- Triple or worse -->
+        <div class="triple-or-worse-key">
+            <div class="triple-or-worse-box"></div>
+            <span class="score-label">Triple Bogey or Worse</span>
+        </div>
+    </div>
 </div>
 <div class="course-scorecards">
     <!-- Scorecards -->
@@ -258,6 +281,7 @@
         </div>
     </div>
     {% endfor %}
+    {% if scorecards.paginator.num_pages > 1 %}
     <!-- Pagination -->
     <div class="grid">
         <nav aria-label="scorecard-pages" class="rounds-paginator">
@@ -316,6 +340,7 @@
             </ul>
         </nav>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
 

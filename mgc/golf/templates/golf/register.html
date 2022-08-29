@@ -12,7 +12,7 @@
     <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
-            <input class="form-control" autofocus type="text" name="first-name" placeholder="First Name">
+            <input class="form-control" autofocus type="text" name="first-name" placeholder="Display Name (i.e. 'Potts')">
         </div>
         <div class="form-group">
             <input class="form-control" autofocus type="text" name="username" placeholder="Username">
@@ -26,7 +26,9 @@
         <div class="form-group">
             <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
         </div>
-        <input class="btn btn-primary" type="submit" value="Register">
+        <div class="grid">
+        <input class="btn btn-primary" id="register-button" type="submit" value="Register">
+        </div>
     </form>
 
     Already have an account? <a href="{% url 'login' %}">Log In</a>

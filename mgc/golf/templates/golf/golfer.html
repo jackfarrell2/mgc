@@ -154,6 +154,7 @@
 </div>
 {% endfor %}
 <!-- Pagination -->
+{% if scorecards.paginator.num_pages > 1 %}
 <nav aria-label="scorecard-pages" class="rounds-paginator">
     <ul class="pagination">
         <!-- Previous button -->
@@ -209,6 +210,7 @@
         {% endif %}
     </ul>
 </nav>
+{% endif %}
 {% endblock %}
 
 {% block script %}

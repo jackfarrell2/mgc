@@ -124,6 +124,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     })
+
+    // Provide the option to delete a golfer 
+    document.getElementById('delete-golfer-button').addEventListener('click', function () {
+        let currentGolfers = document.getElementsByClassName('scorecard')[0].children[0].childElementCount - 4;
+        let lastGolfer = document.getElementsByClassName('scorecard')[0].children[0].children[currentGolfers + 2];
+        if (currentGolfers > 1) {
+            lastGolfer.remove();
+        }
+    })
 })
 
 // Validate user data and count golfers

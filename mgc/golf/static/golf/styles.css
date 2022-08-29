@@ -126,11 +126,12 @@ th {
     text-align: center;
 }
 
-#add-golfer {
+#add-golfer, #delete-golfer-button {
     margin: 0px;
     float: left;
     height: 40px;
     font-size: 15px;
+    margin-right: 20px;
 }
 
 #post-match,
@@ -140,6 +141,10 @@ th {
     margin-left: 10px;
     background-color: #198754;
     border-color: #198754;
+}
+
+#champion-indicator {
+    margin-top: 21px;
 }
 
 #add-course {
@@ -308,9 +313,10 @@ td.stat {
     border-color: #198754;
 }
 
-#login-button {
+#login-button, #register-button {
     background-color: #198754;
     color: white;
+    border-color: #198754;
 }
 
 .pagination>li>a {
