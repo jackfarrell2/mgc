@@ -100,7 +100,7 @@ def get_stats(rounds):
     par_four_average = round((par_four_sum / par_four_counter) + 4, 2)
     par_five_average = round((par_five_sum / par_five_counter) + 5, 2)
     # Create list of stats to be returned
-    golfer_stats = [golfer, round_amount, avg_score, avg_par, best_score,
+    golfer_stats = [golfer.first_name, round_amount, avg_score, avg_par, best_score,
                     birdies_per, pars_per, bogeys_per, doubles_per,
                     triples_per, maxes_per, par_three_average,
                     par_four_average, par_five_average, eagles]

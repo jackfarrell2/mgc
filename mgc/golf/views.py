@@ -6,10 +6,58 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import User, Course, Score, Round
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from golf.helpers import delete_rounds, get_stats, get_scorecard, \
     get_course_avg_scorecard, get_vs_scorecards, add_course, \
     post_match, get_course_names, get_tee_options, get_course_info, \
     get_bart_birdies
+
+
+@api_view(['GET'])
+def api_home(request):
+    # Gather statistics for golfers who have played rounds
+    all_golfers = User.objects.filter(has_rounds=True)
+    all_stats = []
+    for golfer in all_golfers:
+        # Exclude solo rounds
+        golfers_rounds = Round.objects.filter(
+            golfer=golfer, date__year=2022).exclude(solo_round=True)
+        if len(golfers_rounds) > 0:
+            stats = get_stats(golfers_rounds)
+            golfer_info = {}
+            golfer_info['Golfer'] = stats[0]
+            golfer_info['Rounds'] = stats[1]
+            golfer_info['Avg Score'] = stats[2]
+            golfer_info['Avg Par'] = stats[3]
+            golfer_info['Best Score'] = stats[4]
+            golfer_info['Birdies Per'] = stats[5]
+            golfer_info['Pars Per'] = stats[6]
+            golfer_info['Bogeys Per'] = stats[7]
+            golfer_info['Doubles Per'] = stats[8]
+            golfer_info['Triples Per'] = stats[9]
+            golfer_info['Maxes Per'] = stats[10]
+            golfer_info['Par 3 Avg'] = stats[11]
+            golfer_info['Par 4 Avg'] = stats[12]
+            golfer_info['Par 5 Avg'] = stats[13]
+            golfer_info['Eagles'] = stats[14]
+            all_stats.append(golfer_info)
+
+    # Sort stats by average score
+    # def avg_score(golfers_stats):
+    #     return golfers_stats[2]
+    # all_stats.sort(key=avg_score)
+    # Get bart birdies
+    bart_birdies = get_bart_birdies()
+
+    context = {'all_stats': all_stats, 'bart_birdies': bart_birdies}
+    return Response(context)
+
+
+@api_view(['GET'])
+def getData(request):
+    person = {'name': 'Dennis', 'age': 28}
+    return Response(person)
 
 
 def index(request):
