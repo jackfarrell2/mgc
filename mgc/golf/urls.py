@@ -16,5 +16,6 @@ urlpatterns = [
     path("vs/<str:golfer1>/<str:golfer2>/", views.vs, name="vs"),
     path("edit/<int:match_id>/", views.edit, name="edit"),
     path("api/getData", views.getData, name="getData"),
-    path("api/home", views.api_home, name='api_home')
+    path("api/home", views.api_home, name='api_home'),
+    path("api/golfer/<str:golfer>/", views.api_golfer, name="api_golfer")
 ]

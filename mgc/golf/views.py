@@ -84,6 +84,71 @@ def index(request):
     return render(request, "golf/index.html", context)
 
 
+@api_view(['GET'])
+def api_golfer(request, golfer):
+    # Get golfers statistics
+    this_golfer = User.objects.get(first_name=golfer)
+    golfer_rounds = Round.objects.filter(
+        golfer=this_golfer, date__year=2022).order_by('-date')
+    if len(golfer_rounds) > 0:
+        stats = get_stats(golfer_rounds)
+    else:
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+    # Only offer the option to switch to golfers that have played a round
+    all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
+    # Gather a scorecard for every round the golfer has played
+    scorecards = []
+    for this_round in golfer_rounds:
+        scorecard = get_scorecard(this_round)
+        scorecards.append(scorecard)
+    # Paginate scorecards
+    scorecards = Paginator(scorecards, 3)
+    page_number = request.GET.get('page')
+    this_page_scorecard = scorecards.get_page(page_number)
+    golfers = []
+    for golfer in all_golfers:
+        golfers.append(golfer.first_name)
+    golfer_info = {}
+    for stat in stats:
+        golfer_info['Golfer'] = stats[0]
+        golfer_info['Rounds'] = stats[1]
+        golfer_info['Avg Score'] = stats[2]
+        golfer_info['Avg Par'] = stats[3]
+        golfer_info['Best Score'] = stats[4]
+        golfer_info['Birdies Per'] = stats[5]
+        golfer_info['Pars Per'] = stats[6]
+        golfer_info['Bogeys Per'] = stats[7]
+        golfer_info['Doubles Per'] = stats[8]
+        golfer_info['Triples Per'] = stats[9]
+        golfer_info['Maxes Per'] = stats[10]
+        golfer_info['Par 3 Avg'] = stats[11]
+        golfer_info['Par 4 Avg'] = stats[12]
+        golfer_info['Par 5 Avg'] = stats[13]
+        golfer_info['Eagles'] = stats[14]
+    golfer_info_array = [golfer_info]
+    # Gather a scorecard for every round the golfer has played
+    scorecards = []
+    for this_round in golfer_rounds:
+        scorecard = get_scorecard(this_round)
+        scorecards.append(scorecard)
+    api_scorecards = []
+    for scorecard in scorecards:
+        api_scorecard = {}
+        api_scorecard['course_name'] = scorecard['course'].name
+        api_scorecard['tees'] = scorecard['course'].tees
+        api_scorecard['date'] = scorecard['round'].date
+        api_scorecard['yardages'] = scorecard['yardages']
+        api_scorecard['handicaps'] = scorecard['handicaps']
+        api_scorecard['strokes'] = scorecard['strokes']
+        api_scorecard['to_pars'] = scorecard['to_pars']
+        api_scorecard['pars'] = scorecard['pars']
+        api_scorecards.append(api_scorecard)
+
+    context = {'stats': golfer_info_array,
+               'all_golfers': golfers, 'scorecards': api_scorecards}
+    return Response(context)
+
+
 def golfer(request, golfer):
     """Shows a golfers rounds and statistics, including solo rounds"""
     # Get golfers statistics
