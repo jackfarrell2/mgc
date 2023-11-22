@@ -215,6 +215,136 @@ def course(request, course, tees, golfer):
     return render(request, "golf/course.html", context)
 
 
+@api_view(['GET'])
+def api_vs(request, golfer1, golfer2):
+    """Returns an object for vs API request"""
+    if golfer1 == golfer2:
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+     # Offer option to switch to any golfer
+    all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
+    # Retrieve all rounds for selected golfers
+    golfer_one = User.objects.get(first_name=golfer1)
+    golfer_two = User.objects.get(first_name=golfer2)
+    golfer_one_rounds = Round.objects.filter(
+        golfer=golfer_one, date__year=2022)
+    golfer_two_rounds = Round.objects.filter(
+        golfer=golfer_two, date__year=2022)
+    # Check both golfers have playes a round in 2022
+    if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
+        message = 'The selected golfers have not played each other.'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+    # Check which rounds are on the same scorecard / are a match
+    golfer_one_match_ids = []
+    golfer_two_match_ids = []
+    # All golfer one matches
+    for this_round in golfer_one_rounds:
+        if this_round.match not in golfer_one_match_ids:
+            golfer_one_match_ids.append(this_round.match)
+    # All golfer two matches
+    for this_round in golfer_two_rounds:
+        if this_round.match not in golfer_two_match_ids:
+            golfer_two_match_ids.append(this_round.match)
+    # Find common matches
+    cumulative_match_ids = []
+    for id in golfer_one_match_ids:
+        if id in golfer_two_match_ids:
+            cumulative_match_ids.append(id)
+    if len(cumulative_match_ids) == 0:
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+    # Retrieve golfer rounds that are a match between the two golfers
+    golfer_one_rounds = \
+        Round.objects.filter(golfer=golfer_one, date__year=2022,
+                             match__in=cumulative_match_ids).order_by('-date')
+    golfer_two_rounds = \
+        Round.objects.filter(golfer=golfer_two, date__year=2022,
+                             match__in=cumulative_match_ids).order_by('-date')
+    # Get stats for both golfers
+    golfer_one_stats = get_stats(golfer_one_rounds)
+    golfer_two_stats = get_stats(golfer_two_rounds)
+    # Get scorecards for each match
+    both_golfers_rounds = [golfer_one_rounds, golfer_two_rounds]
+    scorecards = get_vs_scorecards(both_golfers_rounds)
+    # Calculate the records between the two golfers
+    match_checker = {'golfer_one_wins': 0, 'golfer_two_wins': 0, 'ties': 0}
+    for scorecard in scorecards:
+        # Golfer one won this match
+        if scorecard['strokes_one'][-1] < scorecard['strokes_two'][-1]:
+            match_checker['golfer_one_wins'] += 1
+        # Golfer two won this match
+        elif scorecard['strokes_one'][-1] > scorecard['strokes_two'][-1]:
+            match_checker['golfer_two_wins'] += 1
+        # This match was a tie
+        else:
+            match_checker['ties'] += 1
+    # Record wins and ties
+    golfer_one_wins = match_checker['golfer_one_wins']
+    golfer_two_wins = match_checker['golfer_two_wins']
+    ties = match_checker['ties']
+    # Message for golfer one winning or tie
+    if golfer_one_wins >= golfer_two_wins:
+        winner = f"{golfer_one} is {golfer_one_wins}"
+        loser = f"-{golfer_two_wins}-{ties} vs {golfer_two}"
+        record = winner + loser
+    # Message for golfer two winning
+    else:
+        winner = f"{golfer_two} is {golfer_two_wins}"
+        loser = f"-{golfer_one_wins}-{ties} vs {golfer_one}"
+        record = winner + loser
+    # Sort stats by which golfer has best average round
+    if golfer_one_stats[2] > golfer_two_stats[2]:
+        buffer = golfer_one_stats
+        golfer_one_stats = golfer_two_stats
+        golfer_two_stats = buffer
+    golfers = []
+    for golfer in all_golfers:
+        golfers.append(golfer.first_name)
+    golfer_one_stats = api_stats(golfer_one_stats)
+    golfer_two_stats = api_stats(golfer_two_stats)
+    scorecards = api_scorecards(scorecards)
+    context = {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats,
+               'scorecards': scorecards,
+               'all_golfers': golfers,
+               'record': record}
+    return Response(context)
+
+def api_scorecards(scorecards):
+    api_scorecards = []
+    for scorecard in scorecards:
+        api_scorecard = {}
+        api_scorecard['course_name'] = scorecard['course'].name
+        api_scorecard['tees'] = scorecard['course'].tees
+        api_scorecard['date'] = scorecard['round'].date
+        api_scorecard['yardages'] = scorecard['yardages']
+        api_scorecard['handicaps'] = scorecard['handicaps']
+        api_scorecard['strokes_one'] = scorecard['strokes_one']
+        api_scorecard['strokes_two'] = scorecard['strokes_two']
+        api_scorecard['to_pars_one'] = scorecard['to_pars_one']
+        api_scorecard['to_pars_two'] = scorecard['to_pars_two']
+        api_scorecard['pars'] = scorecard['pars']
+        api_scorecards.append(api_scorecard)
+    return api_scorecards
+
+def api_stats(stats):
+    golfer_info = {}
+    for stat in stats:
+        golfer_info['Golfer'] = stats[0]
+        golfer_info['Rounds'] = stats[1]
+        golfer_info['Avg Score'] = stats[2]
+        golfer_info['Avg Par'] = stats[3]
+        golfer_info['Best Score'] = stats[4]
+        golfer_info['Birdies Per'] = stats[5]
+        golfer_info['Pars Per'] = stats[6]
+        golfer_info['Bogeys Per'] = stats[7]
+        golfer_info['Doubles Per'] = stats[8]
+        golfer_info['Triples Per'] = stats[9]
+        golfer_info['Maxes Per'] = stats[10]
+        golfer_info['Par 3 Avg'] = stats[11]
+        golfer_info['Par 4 Avg'] = stats[12]
+        golfer_info['Par 5 Avg'] = stats[13]
+        golfer_info['Eagles'] = stats[14]
+    return golfer_info
+
+
 def vs(request, golfer1, golfer2):
     """Shows stats of one golfer vs another"""
     # Ensure two distinct golfers were selected
