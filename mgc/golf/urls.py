@@ -18,5 +18,6 @@ urlpatterns = [
     path("api/getData", views.getData, name="getData"),
     path("api/home", views.api_home, name='api_home'),
     path("api/golfer/<str:golfer>/", views.api_golfer, name="api_golfer"),
-    path("api/vs/<str:golfer1>/<str:golfer2>/", views.api_vs, name="api_vs")
+    path("api/vs/<str:golfer1>/<str:golfer2>/", views.api_vs, name="api_vs"),
+    path("api/courses/<str:course>/<str:tees>/<str:golfer>/", views.api_course, name="api_course"),
 ]

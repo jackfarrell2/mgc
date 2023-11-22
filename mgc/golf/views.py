@@ -178,6 +178,47 @@ def golfer(request, golfer):
     return render(request, "golf/golfer.html", context)
 
 
+@api_view(['GET'])
+def api_course(request, course, tees, golfer):
+    """Shows a golfers statistics, hole averages, and rounds on a course"""
+    # Provide option to switch golfer and/or course
+    all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
+    course_names = get_course_names(course)
+    tee_options = get_tee_options(course, tees)
+    # Retrieve rounds that this golfer has played at this course
+    course = Course.objects.get(name=course, tees=tees)
+    golfer = User.objects.get(first_name=golfer)
+    # Include solo rounds
+    rounds = Round.objects.filter(golfer=golfer,
+                                  course=course,
+                                  date__year=2022).order_by('-date')
+    # Ensure the golfer has played a round at this course
+    if len(rounds) == 0:
+        message = 'The selected golfer has not played the selected course'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Retrieve a scorecard for every round
+    scorecards = []
+    for round in rounds:
+        scorecard = get_scorecard(round)
+        scorecards.append(scorecard)
+    stats = get_stats(rounds)  # Retrieve stats for this golfer at this course
+    # Retrieve golfers hole averages at this course
+    avg_scorecard = []
+    stats = api_stats(stats)
+    scorecards = api_scorecards(scorecards, False)
+    avg_scorecard = []
+    golfers = []
+    for golfer in all_golfers:
+        golfers.append(golfer.first_name)
+    context = {'stats': stats, 'avg_scorecard': avg_scorecard,
+               'scorecards': scorecards, 'courses': course_names,
+               'tees': tee_options, 'golfer': golfer.first_name,
+                'all_golfers': golfers}
+    return Response(context)
+
+
+
+
 def course(request, course, tees, golfer):
     """Shows a golfers statistics, hole averages, and rounds on a course"""
     # Provide option to switch golfer and/or course
@@ -300,30 +341,44 @@ def api_vs(request, golfer1, golfer2):
         golfers.append(golfer.first_name)
     golfer_one_stats = api_stats(golfer_one_stats)
     golfer_two_stats = api_stats(golfer_two_stats)
-    scorecards = api_scorecards(scorecards)
+    scorecards = api_scorecards(scorecards, True)
     context = {'stats_one': golfer_one_stats, 'stats_two': golfer_two_stats,
                'scorecards': scorecards,
                'all_golfers': golfers,
                'record': record}
     return Response(context)
 
-def api_scorecards(scorecards):
-    api_scorecards = []
-    for scorecard in scorecards:
-        api_scorecard = {}
-        api_scorecard['course_name'] = scorecard['course'].name
-        api_scorecard['tees'] = scorecard['course'].tees
-        api_scorecard['date'] = scorecard['round'].date
-        api_scorecard['yardages'] = scorecard['yardages']
-        api_scorecard['handicaps'] = scorecard['handicaps']
-        api_scorecard['strokes_one'] = scorecard['strokes_one']
-        api_scorecard['strokes_two'] = scorecard['strokes_two']
-        api_scorecard['to_pars_one'] = scorecard['to_pars_one']
-        api_scorecard['to_pars_two'] = scorecard['to_pars_two']
-        api_scorecard['pars'] = scorecard['pars']
-        api_scorecards.append(api_scorecard)
-    return api_scorecards
-
+def api_scorecards(scorecards, double):
+    if double:
+        api_scorecards = []
+        for scorecard in scorecards:
+            api_scorecard = {}
+            api_scorecard['course_name'] = scorecard['course'].name
+            api_scorecard['tees'] = scorecard['course'].tees
+            api_scorecard['date'] = scorecard['round'].date
+            api_scorecard['yardages'] = scorecard['yardages']
+            api_scorecard['handicaps'] = scorecard['handicaps']
+            api_scorecard['strokes_one'] = scorecard['strokes_one']
+            api_scorecard['strokes_two'] = scorecard['strokes_two']
+            api_scorecard['to_pars_one'] = scorecard['to_pars_one']
+            api_scorecard['to_pars_two'] = scorecard['to_pars_two']
+            api_scorecard['pars'] = scorecard['pars']
+            api_scorecards.append(api_scorecard)
+        return api_scorecards
+    else:
+        api_scorecards = []
+        for scorecard in scorecards:
+            api_scorecard = {}
+            api_scorecard['course_name'] = scorecard['course'].name
+            api_scorecard['tees'] = scorecard['course'].tees
+            api_scorecard['date'] = scorecard['round'].date
+            api_scorecard['yardages'] = scorecard['yardages']
+            api_scorecard['handicaps'] = scorecard['handicaps']
+            api_scorecard['strokes'] = scorecard['strokes']
+            api_scorecard['to_pars'] = scorecard['to_pars']
+            api_scorecard['pars'] = scorecard['pars']
+            api_scorecards.append(api_scorecard)
+        return api_scorecards
 def api_stats(stats):
     golfer_info = {}
     for stat in stats:
