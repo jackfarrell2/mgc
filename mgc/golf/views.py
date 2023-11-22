@@ -219,7 +219,7 @@ def course(request, course, tees, golfer):
 def api_vs(request, golfer1, golfer2):
     """Returns an object for vs API request"""
     if golfer1 == golfer2:
-        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "You must select two different golfers."}})
      # Offer option to switch to any golfer
     all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
     # Retrieve all rounds for selected golfers
@@ -229,10 +229,10 @@ def api_vs(request, golfer1, golfer2):
         golfer=golfer_one, date__year=2022)
     golfer_two_rounds = Round.objects.filter(
         golfer=golfer_two, date__year=2022)
-    # Check both golfers have playes a round in 2022
+    # Check both golfers have played a round
     if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
-        message = 'The selected golfers have not played each other.'
-        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+        message = "The selected golfers have not played each other."
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
     # Check which rounds are on the same scorecard / are a match
     golfer_one_match_ids = []
     golfer_two_match_ids = []
@@ -250,7 +250,7 @@ def api_vs(request, golfer1, golfer2):
         if id in golfer_two_match_ids:
             cumulative_match_ids.append(id)
     if len(cumulative_match_ids) == 0:
-        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfer has not played a round yet in this year"}})
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfers have not played each other."}})
     # Retrieve golfer rounds that are a match between the two golfers
     golfer_one_rounds = \
         Round.objects.filter(golfer=golfer_one, date__year=2022,
