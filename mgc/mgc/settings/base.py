@@ -54,6 +54,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://172.22.160.1',
+    'http://172.22.160.1:3000',
 ]
 
 ROOT_URLCONF = 'mgc.urls'

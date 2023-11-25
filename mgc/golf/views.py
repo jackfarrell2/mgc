@@ -185,6 +185,9 @@ def api_course(request, course, tees, golfer):
     all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
     course_names = get_course_names(course)
     tee_options = get_tee_options(course, tees)
+    if tees not in tee_options:
+        message = "This course is not in our database."
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}, 'tees': tee_options})
     # Retrieve rounds that this golfer has played at this course
     course = Course.objects.get(name=course, tees=tees)
     golfer = User.objects.get(first_name=golfer)
@@ -195,7 +198,7 @@ def api_course(request, course, tees, golfer):
     # Ensure the golfer has played a round at this course
     if len(rounds) == 0:
         message = 'The selected golfer has not played the selected course'
-        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}, 'tees': tee_options})
     # Retrieve a scorecard for every round
     scorecards = []
     for round in rounds:
@@ -203,18 +206,29 @@ def api_course(request, course, tees, golfer):
         scorecards.append(scorecard)
     stats = get_stats(rounds)  # Retrieve stats for this golfer at this course
     # Retrieve golfers hole averages at this course
-    avg_scorecard = []
+    avg_scorecard = get_course_avg_scorecard(rounds)
+    avg_scorecard = api_avg_scorecard(avg_scorecard)
     stats = api_stats(stats)
-    scorecards = api_scorecards(scorecards, False)
-    avg_scorecard = []
+    scorecards = api_scorecards(scorecards)
     golfers = []
     for golfer in all_golfers:
         golfers.append(golfer.first_name)
-    context = {'stats': stats, 'avg_scorecard': avg_scorecard,
+    context = {'stats': [stats], 'avg_scorecard': avg_scorecard,
                'scorecards': scorecards, 'courses': course_names,
                'tees': tee_options, 'golfer': golfer.first_name,
                 'all_golfers': golfers}
     return Response(context)
+
+def api_avg_scorecard(scorecard):
+    api_scorecard = {}
+    api_scorecard['course_name'] = scorecard['course'].name
+    api_scorecard['tees'] = scorecard['course'].tees
+    api_scorecard['yardages'] = scorecard['yardages']
+    api_scorecard['handicaps'] = scorecard['handicaps']
+    api_scorecard['strokes'] = scorecard['strokes']
+    api_scorecard['to_pars'] = scorecard['to_pars']
+    api_scorecard['pars'] = scorecard['pars']
+    return api_scorecard    
 
 
 
@@ -348,7 +362,7 @@ def api_vs(request, golfer1, golfer2):
                'record': record}
     return Response(context)
 
-def api_scorecards(scorecards, double):
+def api_scorecards(scorecards, double=False):
     if double:
         api_scorecards = []
         for scorecard in scorecards:

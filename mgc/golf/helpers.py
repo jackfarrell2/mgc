@@ -419,11 +419,14 @@ def get_tee_options(course: str, tees: str) -> list:
     duplicate_courses = Course.objects.filter(name=course)
     for course in duplicate_courses:
         tee_options.append(course.tees)
+    if tees not in tee_options:
+        return tee_options
     # Move selected tees to the front
-    selected_tee_index = tee_options.index(tees)
-    if selected_tee_index != 0:
-        tee_options.insert(0, tee_options.pop(selected_tee_index))
-    return tee_options
+    else:
+        selected_tee_index = tee_options.index(tees)
+        if selected_tee_index != 0:
+            tee_options.insert(0, tee_options.pop(selected_tee_index))
+        return tee_options
 
 
 def get_course_info(course) -> list:
