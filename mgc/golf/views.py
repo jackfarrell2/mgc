@@ -179,6 +179,25 @@ def golfer(request, golfer):
 
 
 @api_view(['GET'])
+def get_course_data(request, course, tees):
+    course = Course.objects.get(name=course, tees=tees)
+    courses = Course.objects.all().order_by('name')
+    course_data = get_course_info(course)
+    tee_options = get_tee_options(course, tees)
+    unique_course_names = []
+    for course in courses:
+        if course.name not in unique_course_names:
+            unique_course_names.append(course.name)
+    all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
+    golfer_names = []
+    for golfer in all_golfers:
+        golfer_names.append(golfer.first_name)
+    context = {'course_data': course_data, 'tee_options': tee_options, 'course_names': unique_course_names, 'golfer_names': golfer_names}
+    return Response(context)
+    # Get all tees
+
+
+@api_view(['GET'])
 def api_course(request, course, tees, golfer):
     """Shows a golfers statistics, hole averages, and rounds on a course"""
     # Provide option to switch golfer and/or course
@@ -525,7 +544,7 @@ def post(request):
                           {'message': post_success_checker[1]})
     else:
         # Provide a form to post a match
-        # Get default course information (MCC)
+        # Get default course information (MCC) 
         default_course = Course.objects.get(pk=1)
         # Provide option to switch course
         course_names = get_course_names(default_course.name)

@@ -20,4 +20,5 @@ urlpatterns = [
     path("api/golfer/<str:golfer>/", views.api_golfer, name="api_golfer"),
     path("api/vs/<str:golfer1>/<str:golfer2>/", views.api_vs, name="api_vs"),
     path("api/courses/<str:course>/<str:tees>/<str:golfer>/", views.api_course, name="api_course"),
+    path("api/coursedata/<str:course>/<str:tees>/", views.get_course_data, name="get-course-data")
 ]
