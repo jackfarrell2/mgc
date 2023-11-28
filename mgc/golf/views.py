@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.core.paginator import Paginator
+from django.core.exceptions import ObjectDoesNotExist
 from .models import User, Course, Score, Round
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -180,20 +181,27 @@ def golfer(request, golfer):
 
 @api_view(['GET'])
 def get_course_data(request, course, tees):
-    course = Course.objects.get(name=course, tees=tees)
-    courses = Course.objects.all().order_by('name')
-    course_data = get_course_info(course)
-    tee_options = get_tee_options(course, tees)
-    unique_course_names = []
-    for course in courses:
-        if course.name not in unique_course_names:
-            unique_course_names.append(course.name)
-    all_golfers = User.objects.filter(has_rounds=True).order_by('first_name')
-    golfer_names = []
-    for golfer in all_golfers:
-        golfer_names.append(golfer.first_name)
-    context = {'course_data': course_data, 'tee_options': tee_options, 'course_names': unique_course_names, 'golfer_names': golfer_names}
-    return Response(context)
+    try:
+        course = Course.objects.get(name=course, tees=tees)
+    except ObjectDoesNotExist:
+        tee_options = get_tee_options(course, tees)
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'tee': tee_options})
+    else:
+        courses = Course.objects.all().order_by('name')
+        course_data = get_course_info(course)
+        tee_options = get_tee_options(course, tees)
+        unique_course_names = []
+        for course in courses:
+            if course.name not in unique_course_names:
+                unique_course_names.append(course.name)
+        all_golfers = User.objects.filter(
+            has_rounds=True).order_by('first_name')
+        golfer_names = []
+        for golfer in all_golfers:
+            golfer_names.append(golfer.first_name)
+        context = {'course_data': course_data, 'tee_options': tee_options,
+                   'course_names': unique_course_names, 'golfer_names': golfer_names}
+        return Response(context)
     # Get all tees
 
 
@@ -235,8 +243,9 @@ def api_course(request, course, tees, golfer):
     context = {'stats': [stats], 'avg_scorecard': avg_scorecard,
                'scorecards': scorecards, 'courses': course_names,
                'tees': tee_options, 'golfer': golfer.first_name,
-                'all_golfers': golfers}
+               'all_golfers': golfers}
     return Response(context)
+
 
 def api_avg_scorecard(scorecard):
     api_scorecard = {}
@@ -247,9 +256,7 @@ def api_avg_scorecard(scorecard):
     api_scorecard['strokes'] = scorecard['strokes']
     api_scorecard['to_pars'] = scorecard['to_pars']
     api_scorecard['pars'] = scorecard['pars']
-    return api_scorecard    
-
-
+    return api_scorecard
 
 
 def course(request, course, tees, golfer):
@@ -381,6 +388,7 @@ def api_vs(request, golfer1, golfer2):
                'record': record}
     return Response(context)
 
+
 def api_scorecards(scorecards, double=False):
     if double:
         api_scorecards = []
@@ -412,6 +420,8 @@ def api_scorecards(scorecards, double=False):
             api_scorecard['pars'] = scorecard['pars']
             api_scorecards.append(api_scorecard)
         return api_scorecards
+
+
 def api_stats(stats):
     golfer_info = {}
     for stat in stats:
@@ -544,7 +554,7 @@ def post(request):
                           {'message': post_success_checker[1]})
     else:
         # Provide a form to post a match
-        # Get default course information (MCC) 
+        # Get default course information (MCC)
         default_course = Course.objects.get(pk=1)
         # Provide option to switch course
         course_names = get_course_names(default_course.name)
