@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
-from .models import User, Course, Score, Round
+from .models import User, Course, Score, Round, Hole
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from golf.helpers import delete_rounds, get_stats, get_scorecard, \
@@ -536,6 +536,54 @@ def vs(request, golfer1, golfer2):
                'golfer_one': golfer_one, 'golfer_two': golfer_two,
                'record': record}
     return render(request, "golf/vs.html", context)
+
+
+@api_view(['GET', 'POST'])  # Specify the allowed HTTP methods
+def api_post(request):
+    test_data = {'test': 'test'}
+    data = request.data
+    golfer_count = data['golferCount']
+    golfers = data['golfers']
+    date = data['date']
+    date = datetime.fromisoformat(date[:-1])
+    date = date.strftime('%Y-%m-%d')
+    course = data['course']
+    tee = data['tee']
+    golfer_scores = data['strokes']
+    acceptable_scores = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if golfer_count < 1 or golfer_count > 4:
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "There was an error processing your request."}})
+    for i in range(golfer_count):
+        for j in range(18):
+            if golfer_scores[i][j] not in acceptable_scores:
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "All scores entered should be single numbers."}})
+    # Store round information
+    # Create new match_id
+    highest_matches =  \
+        Round.objects.all().order_by('-match').values()
+    highest_match = highest_matches[0]['match']
+    match = highest_match + 1
+    # Save a round for each golfer
+    for i in range(golfer_count):
+        golfer_name = golfers[i]
+        golfer = User.objects.get(first_name=golfer_name)
+        course = Course.objects.get(
+            name=course, tees=tee)
+        this_round = Round(golfer=golfer, course=course,
+                           date=date, match=match)
+        this_round.save()
+        # Add golfer to those who have rounds played
+        golfer.has_rounds = True
+        golfer.save()
+        # Store each score
+        for i in range(golfer_count):
+            for j in range(1, 18):
+                score = golfer_scores[i][j]
+                hole = Hole.objects.get(course=course, tee=j)
+                this_score = Score(
+                    score=score, golfer=golfer, round=this_round, hole=hole)
+                # this_score.save()
+    return Response({'message': 'success', 'error': False,  'result': {'Message': "Added Round Successfully"}})
 
 
 def post(request):
