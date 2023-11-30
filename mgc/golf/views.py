@@ -677,6 +677,22 @@ def post_tees(request, name, tees):
     return render(request, "golf/post.html", context)
 
 
+@api_view(['GET', 'POST'])
+def api_new(request):
+    """Allows the user to add a course to the database"""
+    if request.method == "GET":
+        # Display form
+        courses = Course.objects.all().order_by('name')
+        course_names = []
+        for course in courses:
+            if course.name not in course_names:
+                course_names.append(course.name)
+        context = {'course_names': course_names}
+        return Response(context)
+    else:
+        return Response({'test': 'test'})
+
+
 def new(request):
     """Allows the user to add a course to the database"""
     if request.method == "POST":

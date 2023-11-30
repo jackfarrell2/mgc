@@ -23,5 +23,6 @@ urlpatterns = [
          views.api_course, name="api_course"),
     path("api/coursedata/<str:course>/<str:tees>/",
          views.get_course_data, name="get-course-data"),
-    path('api/post', views.api_post, name="api-post")
+    path('api/post', views.api_post, name="api-post"),
+    path('api/new/', views.api_new, name='api-new')
 ]
