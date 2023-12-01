@@ -8,11 +8,12 @@ from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from .models import User, Course, Score, Round, Hole
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.decorators import api_view
 from golf.helpers import delete_rounds, get_stats, get_scorecard, \
     get_course_avg_scorecard, get_vs_scorecards, add_course, \
     post_match, get_course_names, get_tee_options, get_course_info, \
-    get_bart_birdies
+    get_bart_birdies, api_add_course
 
 
 @api_view(['GET'])
@@ -629,7 +630,7 @@ def post(request):
 
 
 def post_course(request, name):
-    """Allows the user to post a round or match. Default to white tees"""
+    """Allows the user to post a course. Default to white tees"""
     # Check if the requested course has more than one tee option
     courses = Course.objects.filter(name=name)
     if len(courses) == 1:
@@ -689,8 +690,114 @@ def api_new(request):
                 course_names.append(course.name)
         context = {'course_names': course_names}
         return Response(context)
+    elif request.method == "POST":
+        # Parse request data
+        course = request.data['course']
+        tee = request.data['tee']
+        slope = request.data['slope']
+        course_rating = request.data['courseRating']
+        yardages = request.data['yardages']
+        handicaps = request.data['handicaps']
+        pars = request.data['pars']
+        submit_option = request.data['submitOption']
+        new_course_name = request.data['newCourseName']
+        # Verify and store all course information
+        # Verify valid slope
+        try:
+            slope = int(slope)
+        except:
+            message = 'Invalid Slope Rating'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        if slope < 55 or slope > 155:
+            message = 'Invalid Slope Rating'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Verify valid course rating
+        try:
+            course_rating = float(course_rating)
+        except:
+            message = 'Invalid course rating.'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Verify the rating format
+        test_rating = str(course_rating)
+        if len(test_rating) != 4:
+            message = 'Invalid Course Rating'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Check for integers
+        for i in range(len(test_rating)):
+            if i != 2:
+                if not test_rating[i].isdigit():
+                    message = 'Invalid Course Rating'
+                    return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+            # Check for period
+            else:
+                if test_rating[i] != '.':
+                    message = 'Invalid Course Rating'
+                    return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        if course_rating < 60 or course_rating > 81:
+            message = 'Invalid Course Rating'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Store yardage information
+        for yardage in yardages:
+            try:
+                this_yardage = int(yardage)
+            except:
+                message = 'Invalid Yardages'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+            if this_yardage < 50 or this_yardage > 999:
+                message = 'Invalid Yardages'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Store par information
+        for par in pars:
+            try:
+                this_par = int(par)
+            except:
+                message = 'Invalid Pars'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+            if this_par < 3 or this_par > 5:
+                message = 'Invalid Pars'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Store handicap information
+        for handicap in handicaps:
+            try:
+                this_handicap = int(handicap)
+            except:
+                message = 'Invalid Handicaps'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+            if this_handicap < 1 or this_handicap > 18:
+                message = 'Invalid Handicaps'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Check if there are any duplicates
+        if len(handicaps) != len(set(handicaps)):
+            message = 'Multiple holes cannot have the same handicap.'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Check if the user is adding a new course or just a new tee option
+        # User is adding a new course
+        if submit_option == 'course':
+            # Check if the course name already exists
+            all_courses = Course.objects.all()
+            for i in range(len(all_courses)):
+                if all_courses[i].name == new_course_name:
+                    message = 'Course Name Already Exists'
+                    return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+            # Create course
+            api_add_course(request, pars, yardages, handicaps)
+            message = 'Course Submitted'
+            return Response({'message': 'success', 'error': False, 'result': {'Message': message}})
+        # User is just adding a new tee option
+        elif submit_option == 'tees':
+            # Check if tee option already exists for the selected course
+            all_courses = Course.objects.all()
+            for this_course in all_courses:
+                if this_course.name == course and this_course.tees == tee:
+                    message = "This tee option already " \
+                        "exists for the selected course."
+                    return Response({'message': 'fail', 'error': True, 'code': 400, 'result': {'Message': message}}, status=status.HTTP_400_BAD_REQUEST)
+            api_add_course(request, pars, yardages,
+                           handicaps, False)  # Add course
+            message = 'Course Submitted'
+            return Response({'message': 'success', 'error': False, 'result': {'Message': message}})
     else:
-        return Response({'test': 'test'})
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "Can only submit a POST or GET request."}})
 
 
 def new(request):
@@ -812,7 +919,7 @@ def new(request):
             for course in all_courses:
                 if course.name == request.POST['course-exists'] and \
                         course.tees == request.POST['tees-course-exists']:
-                    message = "This tee option already" \
+                    message = "This tee option already " \
                         "exists for the selected course."
                     return render(request, "golf/error.html",
                                   {'message': message})

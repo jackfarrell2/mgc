@@ -276,6 +276,45 @@ def get_to_pars(strokes: list, pars: list) -> list:
     return to_pars
 
 
+def api_add_course(request, pars: list, yardages: list, handicaps: list, new=True):
+    """Adds a course to the database via API"""
+    # Check if the course is new or just new tee's
+    if new:
+        tees = request.data['tee']
+        course_name = request.data['newCourseName']
+    else:
+        tees = request.data['tee']
+        course_name = request.data['course']
+    course_abbreviation = abbreviate_course(course_name)
+    yardages = request.data['yardages']
+    yardages_front = sum(yardages[:9])
+    yardages_back = sum(yardages[9:])
+    yaradage_total = sum(yardages)
+    pars = request.data['pars']
+    pars_front = sum(pars[:9])
+    pars_back = sum(pars[9:])
+    pars_total = sum(pars)
+    # Create Course
+    this_course = Course(name=course_name,
+                         tees=tees,
+                         front_par=int(pars_front),
+                         back_par=int(pars_back),
+                         par=int(pars_total),
+                         front_yardage=int(yardages_front),
+                         back_yardage=int(yardages_back),
+                         yardage=int(yaradage_total),
+                         slope=int(request.data['slope']),
+                         course_rating=float(request.data['courseRating']),
+                         abbreviation=course_abbreviation)
+    # this_course.save()
+    # Add holes
+    for i in range(18):
+        this_hole = Hole(course=this_course, tee=i+1,
+                         par=pars[i], yardage=yardages[i],
+                         handicap=handicaps[i])
+        # this_hole.save()
+
+
 def add_course(request, pars: list, yardages: list, handicaps: list, new=True):
     """Adds a course to the database"""
     # Check if the course is new or just new tee's
