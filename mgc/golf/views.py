@@ -103,10 +103,6 @@ def api_golfer(request, golfer):
     for this_round in golfer_rounds:
         scorecard = get_scorecard(this_round)
         scorecards.append(scorecard)
-    # Paginate scorecards
-    scorecards = Paginator(scorecards, 3)
-    page_number = request.GET.get('page')
-    this_page_scorecard = scorecards.get_page(page_number)
     golfers = []
     for golfer in all_golfers:
         golfers.append(golfer.first_name)
@@ -144,6 +140,7 @@ def api_golfer(request, golfer):
         api_scorecard['strokes'] = scorecard['strokes']
         api_scorecard['to_pars'] = scorecard['to_pars']
         api_scorecard['pars'] = scorecard['pars']
+        api_scorecard['match'] = scorecard['match_id']
         api_scorecards.append(api_scorecard)
 
     context = {'stats': golfer_info_array,
@@ -735,6 +732,11 @@ def api_new(request):
                     return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
         if course_rating < 60 or course_rating > 81:
             message = 'Invalid Course Rating'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Verify Selected Tees
+        tee_options = ['White', 'Blue', 'Red']
+        if tee not in tee_options:
+            message = 'Invalid Tee Selected'
             return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
         # Store yardage information
         for yardage in yardages:

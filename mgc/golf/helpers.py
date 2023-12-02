@@ -110,6 +110,7 @@ def get_stats(rounds):
 def get_scorecard(round) -> list:
     """Returns a scorecard for a round (queryset)"""
     # Create a list for each row in the scorecard
+    match_id = round.match
     handicaps = []
     pars = []
     strokes = []
@@ -137,7 +138,7 @@ def get_scorecard(round) -> list:
     zipped_scores = zip(strokes, hole_scores)  # Zip scores for rendering
     scorecard = {'round': round, 'course': course, 'yardages': yardages,
                  'handicaps': handicaps, 'pars': pars, 'strokes': strokes,
-                 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+                 'to_pars': to_pars, 'match_id': match_id, 'zipped_scores': zipped_scores}
     return scorecard
 
 
