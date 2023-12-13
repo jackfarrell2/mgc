@@ -203,6 +203,137 @@ def get_course_data(request, course, tees):
 
 
 @api_view(['GET'])
+def api_get_all_course_data(request, course_name):
+    try:
+        courses = Course.objects.filter(name=course_name)
+    except:
+        return Response({'message': 'fail', 'error': True, 'code': 500, })
+    course_data = []
+    tee_options = []
+    for course in courses:
+        tee_options.append(course.tees)
+        this_course_info = {}
+        this_course_info['tee'] = course.tees
+        this_course_info['slope'] = course.slope
+        this_course_info['course-rating'] = course.course_rating
+        this_course_info['hole-information'] = get_course_info(course)
+        course_data.append(this_course_info)
+    context = {'course_data': course_data, 'tee_options': tee_options}
+    return Response(context)
+
+
+@api_view(['PUT'])
+def api_edit_course(request, course_name, tee):
+    try:
+        course = Course.objects.get(name=course_name, tees=tee)
+    except:
+        return Response({'message': 'fail', 'error': True, 'code': 500, })
+    # Parse request data
+    slope = request.data['slope']
+    course_rating = request.data['courseRating']
+    yardages = request.data['yardages']
+    handicaps = request.data['handicaps']
+    pars = request.data['pars']
+    # Verify and store all course information
+    # Verify valid slope
+    try:
+        slope = int(slope)
+    except:
+        message = 'Invalid Slope Rating'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    if slope < 55 or slope > 155:
+        message = 'Invalid Slope Rating'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Verify valid course rating
+    try:
+        course_rating = float(course_rating)
+    except:
+        message = 'Invalid course rating.'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Verify the rating format
+    test_rating = str(course_rating)
+    if len(test_rating) != 4:
+        message = 'Invalid Course Rating'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Check for integers
+    for i in range(len(test_rating)):
+        if i != 2:
+            if not test_rating[i].isdigit():
+                message = 'Invalid Course Rating'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        # Check for period
+        else:
+            if test_rating[i] != '.':
+                message = 'Invalid Course Rating'
+                return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    if course_rating < 60 or course_rating > 81:
+        message = 'Invalid Course Rating'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Verify Selected Tees
+    tee_options = ['White', 'Blue', 'Red']
+    if tee not in tee_options:
+        message = 'Invalid Tee Selected'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Store yardage information
+    for yardage in yardages:
+        try:
+            this_yardage = int(yardage)
+        except:
+            message = 'Invalid Yardages'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        if this_yardage < 50 or this_yardage > 999:
+            message = 'Invalid Yardages'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Store par information
+    for par in pars:
+        try:
+            this_par = int(par)
+        except:
+            message = 'Invalid Pars'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        if this_par < 3 or this_par > 5:
+            message = 'Invalid Pars'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Store handicap information
+    for handicap in handicaps:
+        try:
+            this_handicap = int(handicap)
+        except:
+            message = 'Invalid Handicaps'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+        if this_handicap < 1 or this_handicap > 18:
+            message = 'Invalid Handicaps'
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Check if there are any duplicates
+    if len(handicaps) != len(set(handicaps)):
+        message = 'Multiple holes cannot have the same handicap.'
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': message}})
+    # Update data
+    yardages_front = int(sum(yardages[:9]))
+    yardages_back = int(sum(yardages[9:]))
+    yaradage_total = int(sum(yardages))
+    pars_front = int(sum(pars[:9]))
+    pars_back = int(sum(pars[9:]))
+    pars_total = int(sum(pars))
+    course.course_rating = float(course_rating)
+    course.slope = slope
+    course.front_par = pars_front
+    course.back_par = pars_back
+    course.par = pars_total
+    course.front_yardage = yardages_front
+    course.back_yardage = yardages_back
+    course.yardage = yaradage_total
+    course.save()
+    holes = Hole.objects.filter(course=course).order_by('tee')
+    for i in range(len(holes)):
+        holes[i].par = pars[i]
+        holes[i].yardage = yardages[i]
+        holes[i].handicap = handicaps[i]
+        holes[i].save()
+    return Response({'message': 'success', 'error': False})
+
+
+@api_view(['GET'])
 def api_course(request, course, tees, golfer):
     """Shows a golfers statistics, hole averages, and rounds on a course"""
     # Provide option to switch golfer and/or course
@@ -709,6 +840,10 @@ def api_new(request):
         pars = request.data['pars']
         submit_option = request.data['submitOption']
         new_course_name = request.data['newCourseName']
+        capitalized_words = [word.capitalize()
+                             for word in new_course_name.split()]
+        new_course_name = ' '.join(capitalized_words)
+
         # Verify and store all course information
         # Verify valid slope
         try:

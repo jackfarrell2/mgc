@@ -284,6 +284,9 @@ def api_add_course(request, pars: list, yardages: list, handicaps: list, new=Tru
     if new:
         tees = request.data['tee']
         course_name = request.data['newCourseName']
+        capitalized_words = [word.capitalize()
+                             for word in course_name.split()]
+        course_name = ' '.join(capitalized_words)
     else:
         tees = request.data['tee']
         course_name = request.data['course']
