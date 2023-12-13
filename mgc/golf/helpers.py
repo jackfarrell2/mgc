@@ -195,7 +195,8 @@ def get_vs_scorecards(golfer_rounds) -> list:
                      'strokes_one': strokes_one, 'strokes_two': strokes_two,
                      'to_pars_one': to_pars_one, 'to_pars_two': to_pars_two,
                      'zipped_scores_one': zipped_scores_one,
-                     'zipped_scores_two': zipped_scores_two}
+                     'zipped_scores_two': zipped_scores_two,
+                     }
         scorecards.append(scorecard)
     return scorecards
 
@@ -307,13 +308,13 @@ def api_add_course(request, pars: list, yardages: list, handicaps: list, new=Tru
                          slope=int(request.data['slope']),
                          course_rating=float(request.data['courseRating']),
                          abbreviation=course_abbreviation)
-    # this_course.save()
+    this_course.save()
     # Add holes
     for i in range(18):
         this_hole = Hole(course=this_course, tee=i+1,
                          par=pars[i], yardage=yardages[i],
                          handicap=handicaps[i])
-        # this_hole.save()
+        this_hole.save()
 
 
 def add_course(request, pars: list, yardages: list, handicaps: list, new=True):

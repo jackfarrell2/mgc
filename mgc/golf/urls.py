@@ -25,4 +25,5 @@ urlpatterns = [
          views.get_course_data, name="get-course-data"),
     path('api/post/', views.api_post, name="api-post"),
     path('api/new/', views.api_new, name='api-new'),
+    path('api/edit/<int:match_id>/', views.api_edit, name='api-edit'),
 ]

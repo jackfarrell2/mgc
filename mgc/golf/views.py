@@ -24,7 +24,7 @@ def api_home(request):
     for golfer in all_golfers:
         # Exclude solo rounds
         golfers_rounds = Round.objects.filter(
-            golfer=golfer, date__year=2022).exclude(solo_round=True)
+            golfer=golfer, date__year=2023).exclude(solo_round=True)
         if len(golfers_rounds) > 0:
             stats = get_stats(golfers_rounds)
             golfer_info = {}
@@ -70,7 +70,7 @@ def index(request):
     for golfer in all_golfers:
         # Exclude solo rounds
         golfers_rounds = Round.objects.filter(
-            golfer=golfer, date__year=2022).exclude(solo_round=True)
+            golfer=golfer, date__year=2023).exclude(solo_round=True)
         if len(golfers_rounds) > 0:
             stats = get_stats(golfers_rounds)
             all_stats.append(stats)
@@ -91,7 +91,7 @@ def api_golfer(request, golfer):
     # Get golfers statistics
     this_golfer = User.objects.get(first_name=golfer)
     golfer_rounds = Round.objects.filter(
-        golfer=this_golfer, date__year=2022).order_by('-date')
+        golfer=this_golfer, date__year=2023).order_by('-date')
     if len(golfer_rounds) > 0:
         stats = get_stats(golfer_rounds)
     else:
@@ -153,7 +153,7 @@ def golfer(request, golfer):
     # Get golfers statistics
     this_golfer = User.objects.get(first_name=golfer)
     golfer_rounds = Round.objects.filter(
-        golfer=this_golfer, date__year=2022).order_by('-date')
+        golfer=this_golfer, date__year=2023).order_by('-date')
     if len(golfer_rounds) > 0:
         stats = get_stats(golfer_rounds)
     else:
@@ -200,7 +200,6 @@ def get_course_data(request, course, tees):
         context = {'course_data': course_data, 'tee_options': tee_options,
                    'course_names': unique_course_names, 'golfer_names': golfer_names}
         return Response(context)
-    # Get all tees
 
 
 @api_view(['GET'])
@@ -219,7 +218,7 @@ def api_course(request, course, tees, golfer):
     # Include solo rounds
     rounds = Round.objects.filter(golfer=golfer,
                                   course=course,
-                                  date__year=2022).order_by('-date')
+                                  date__year=2023).order_by('-date')
     # Ensure the golfer has played a round at this course
     if len(rounds) == 0:
         message = 'The selected golfer has not played the selected course'
@@ -254,6 +253,10 @@ def api_avg_scorecard(scorecard):
     api_scorecard['strokes'] = scorecard['strokes']
     api_scorecard['to_pars'] = scorecard['to_pars']
     api_scorecard['pars'] = scorecard['pars']
+    try:
+        api_scorecard['match'] = scorecard['match_id']
+    except:
+        pass
     return api_scorecard
 
 
@@ -269,7 +272,7 @@ def course(request, course, tees, golfer):
     # Include solo rounds
     rounds = Round.objects.filter(golfer=golfer,
                                   course=course,
-                                  date__year=2022).order_by('-date')
+                                  date__year=2023).order_by('-date')
     # Ensure the golfer has played a round at this course
     if len(rounds) == 0:
         message = 'The selected golfer has not played the selected course'
@@ -305,9 +308,9 @@ def api_vs(request, golfer1, golfer2):
     golfer_one = User.objects.get(first_name=golfer1)
     golfer_two = User.objects.get(first_name=golfer2)
     golfer_one_rounds = Round.objects.filter(
-        golfer=golfer_one, date__year=2022)
+        golfer=golfer_one, date__year=2023)
     golfer_two_rounds = Round.objects.filter(
-        golfer=golfer_two, date__year=2022)
+        golfer=golfer_two, date__year=2023)
     # Check both golfers have played a round
     if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
         message = "The selected golfers have not played each other."
@@ -332,10 +335,10 @@ def api_vs(request, golfer1, golfer2):
         return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "The selected golfers have not played each other."}})
     # Retrieve golfer rounds that are a match between the two golfers
     golfer_one_rounds = \
-        Round.objects.filter(golfer=golfer_one, date__year=2022,
+        Round.objects.filter(golfer=golfer_one, date__year=2023,
                              match__in=cumulative_match_ids).order_by('-date')
     golfer_two_rounds = \
-        Round.objects.filter(golfer=golfer_two, date__year=2022,
+        Round.objects.filter(golfer=golfer_two, date__year=2023,
                              match__in=cumulative_match_ids).order_by('-date')
     # Get stats for both golfers
     golfer_one_stats = get_stats(golfer_one_rounds)
@@ -403,6 +406,10 @@ def api_scorecards(scorecards, double=False):
             api_scorecard['to_pars_two'] = scorecard['to_pars_two']
             api_scorecard['pars'] = scorecard['pars']
             api_scorecards.append(api_scorecard)
+            try:
+                api_scorecard['match'] = scorecard['round'].match
+            except:
+                pass
         return api_scorecards
     else:
         api_scorecards = []
@@ -417,6 +424,10 @@ def api_scorecards(scorecards, double=False):
             api_scorecard['to_pars'] = scorecard['to_pars']
             api_scorecard['pars'] = scorecard['pars']
             api_scorecards.append(api_scorecard)
+            try:
+                api_scorecard['match'] = scorecard['match_id']
+            except:
+                pass
         return api_scorecards
 
 
@@ -453,10 +464,10 @@ def vs(request, golfer1, golfer2):
     golfer_one = User.objects.get(first_name=golfer1)
     golfer_two = User.objects.get(first_name=golfer2)
     golfer_one_rounds = Round.objects.filter(
-        golfer=golfer_one, date__year=2022)
+        golfer=golfer_one, date__year=2023)
     golfer_two_rounds = Round.objects.filter(
-        golfer=golfer_two, date__year=2022)
-    # Check both golfers have playes a round in 2022
+        golfer=golfer_two, date__year=2023)
+    # Check both golfers have playes a round in 2023
     if len(golfer_one_rounds) == 0 or len(golfer_two_rounds) == 0:
         message = 'The selected golfers have not played each other.'
         return render(request, "golf/error.html", {'message': message})
@@ -481,10 +492,10 @@ def vs(request, golfer1, golfer2):
         return render(request, "golf/error.html", {'message': message})
     # Retrieve golfer rounds that are a match between the two golfers
     golfer_one_rounds = \
-        Round.objects.filter(golfer=golfer_one, date__year=2022,
+        Round.objects.filter(golfer=golfer_one, date__year=2023,
                              match__in=cumulative_match_ids).order_by('-date')
     golfer_two_rounds = \
-        Round.objects.filter(golfer=golfer_two, date__year=2022,
+        Round.objects.filter(golfer=golfer_two, date__year=2023,
                              match__in=cumulative_match_ids).order_by('-date')
     # Get stats for both golfers
     golfer_one_stats = get_stats(golfer_one_rounds)
@@ -536,12 +547,12 @@ def vs(request, golfer1, golfer2):
     return render(request, "golf/vs.html", context)
 
 
-@api_view(['GET', 'POST'])  # Specify the allowed HTTP methods
+@api_view(['POST'])
 def api_post(request):
-    test_data = {'test': 'test'}
     data = request.data
     golfer_count = data['golferCount']
-    golfers = data['golfers']
+    empty_golfers = data['golfers']
+    golfers = [golfer for golfer in empty_golfers if golfer != '']
     date = data['date']
     date = datetime.fromisoformat(date[:-1])
     date = date.strftime('%Y-%m-%d')
@@ -549,8 +560,10 @@ def api_post(request):
     tee = data['tee']
     golfer_scores = data['strokes']
     acceptable_scores = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if len(golfers) != len(set(golfers)) or len(golfers) != golfer_count:
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "Each golfer should be unique."}})
     if golfer_count < 1 or golfer_count > 4:
-        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "There was an error processing your request."}})
+        return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "Each golfer should be unique."}})
     for i in range(golfer_count):
         for j in range(18):
             if golfer_scores[i][j] not in acceptable_scores:
@@ -573,14 +586,12 @@ def api_post(request):
         # Add golfer to those who have rounds played
         golfer.has_rounds = True
         golfer.save()
-        # Store each score
-        for i in range(golfer_count):
-            for j in range(1, 18):
-                score = golfer_scores[i][j]
-                hole = Hole.objects.get(course=course, tee=j)
-                this_score = Score(
-                    score=score, golfer=golfer, round=this_round, hole=hole)
-                # this_score.save()
+        for j in range(0, 18):
+            score = golfer_scores[i][j]
+            hole = Hole.objects.get(course=course, tee=j+1)
+            this_score = Score(
+                score=score, golfer=golfer, round=this_round, hole=hole)
+            this_score.save()
     return Response({'message': 'success', 'error': False,  'result': {'Message': "Added Round Successfully"}})
 
 
@@ -940,6 +951,124 @@ def new(request):
                 course_names.append(course.name)
         context = {'course_names': course_names, "course_length": range(1, 10)}
         return render(request, "golf/new.html", context)
+
+
+@api_view(['GET', 'POST'])
+def api_edit(request, match_id):
+    """Edits or deletes a match in the database via API"""
+    if request.method == 'GET':
+        # Retrieve match rounds
+        rounds = Round.objects.filter(match=match_id)
+        # Provide course names with the given course selected
+        course_name = rounds[0].course.name
+        course_tees = rounds[0].course.tees
+        tee_options = get_tee_options(course_name, course_tees)
+        # Retrieve selected golfers
+        golfers = []
+        for this_round in rounds:
+            golfers.append(this_round.golfer)
+        default_course = Course.objects.get(name=course_name,
+                                            tees=course_tees)
+        golfers_names = []
+        for golfer in golfers:
+            golfers_names.append(golfer. first_name)
+        # Retrieve scorecard information
+        course_info = get_course_info(default_course)
+        # Get course date
+        date = rounds[0].date
+        date = date.strftime("%Y-%m-%d")
+        # Provide golfer options
+        all_golfers = User.objects.filter(
+            has_rounds=True).order_by('first_name')
+        golfer_options = []
+        for golfer in all_golfers:
+            if golfer.first_name not in golfer_options:
+                golfer_options.append(golfer.first_name)
+        # Provide course options
+        courses = Course.objects.all().order_by('name')
+        course_names = []
+        for course in courses:
+            if course.name not in course_names:
+                course_names.append(course.name)
+        # Get golfer strokes
+        golfers_strokes = []
+        for golfer_round in rounds:
+            golfer_strokes = []
+            golfer_scores = Score.objects.filter(round=golfer_round)
+            # Store golfer scores
+            for score in golfer_scores:
+                golfer_strokes.append(score.score)
+            golfers_strokes.append(golfer_strokes)
+        context = {"course_name": course_name,
+                   "course_names": course_names,
+                   "golfers": golfers_names,
+                   "golfer_options": golfer_options,
+                   "golfers_strokes": golfers_strokes,
+                   "yardages": course_info[2], "handicaps": course_info[1],
+                   "pars": course_info[0], "date": date, "match_id": match_id,
+                   "course_tees": course_tees, "tee_options": tee_options}
+        return Response(context)
+    elif request.method == 'POST':
+        # Add the edited match and delete the unedited match
+        # Check if we are deleting or editing match
+        try:
+            # If there is a match ID we are editing
+            match_id = request.data['matchId']
+        # Delete match
+        except:
+            rounds = Round.objects.filter(match=match_id)
+            delete_rounds(rounds)
+            context = {"Round Deleted": "Success"}
+            return Response(context)
+        data = request.data
+        golfer_count = data['golferCount']
+        golfers = data['golfers']
+        date = data['date']
+        date = datetime.fromisoformat(date[:-1])
+        date = date.strftime('%Y-%m-%d')
+        course = data['course']
+        tee = data['tee']
+        golfer_scores = data['strokes']
+        acceptable_scores = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        if len(golfers) != len(set(golfers)) or '' in golfers:
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "Each golfer should be unique"}})
+        if golfer_count < 1 or golfer_count > 4:
+            return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "There was an error processing your request."}})
+        for i in range(golfer_count):
+            for j in range(18):
+                if golfer_scores[i][j] not in acceptable_scores:
+                    return Response({'message': 'fail', 'error': True, 'code': 500, 'result': {'Message': "All scores entered should be single numbers."}})
+        # Store round information
+        # Create new match_id
+        highest_matches =  \
+            Round.objects.all().order_by('-match').values()
+        highest_match = highest_matches[0]['match']
+        match = highest_match + 1
+        # Save a round for each golfer
+        for i in range(golfer_count):
+            golfer_name = golfers[i]
+            golfer = User.objects.get(first_name=golfer_name)
+            course = Course.objects.get(
+                name=course, tees=tee)
+            this_round = Round(golfer=golfer, course=course,
+                               date=date, match=match)
+            this_round.save()
+            # Add golfer to those who have rounds played
+            golfer.has_rounds = True
+            golfer.save()
+            # Store each score
+            for j in range(0, 18):
+                score = golfer_scores[i][j]
+                hole = Hole.objects.get(course=course, tee=j+1)
+                this_score = Score(
+                    score=score, golfer=golfer, round=this_round, hole=hole)
+                this_score.save()
+        # Delete the unedited rounds
+        rounds = Round.objects.filter(match=match_id)
+        delete_rounds(rounds)
+        return Response({'message': 'success', 'error': False,  'result': {'Message': "Edited Round Successfully"}})
+    else:
+        return Response({'message': 'Denied access', 'error': True})
 
 
 def edit(request, match_id):
