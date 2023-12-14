@@ -1,0 +1,429 @@
+.grid {
+    display: grid;
+    place-items: center;
+    padding: 15px;
+}
+
+#nav {
+    background-color: #198754;
+    height: 80px;
+    list-style: none;
+}
+
+.show {
+    padding: 0px;
+}
+
+
+#nav a {
+    color: white;
+}
+
+
+li .nav-item {
+    color: white;
+}
+
+.scorecard {
+    table-layout: fixed;
+    width: 95%;
+    padding-top: 30px;
+    padding-bottom: 15px;
+    border-bottom: #cac2c2 1px solid;
+    padding-left: 15px;
+    margin: 20px;
+    margin-top: 3px;
+
+}
+
+.scorecard-view {
+    margin: 0 auto;
+    width: 900px;
+    font-size: medium;
+    text-align: center;
+    padding-top: 30px;
+    padding-bottom: 15px;
+    border-bottom: #cac2c2 1px solid;
+}
+
+.holes-row {
+    color: white;
+    background-color: black;
+    text-align: center;
+    font-weight: bold;
+}
+
+.yardages-row {
+    text-align: center;
+}
+
+.handicap-row {
+    text-align: center;
+    color: black;
+    background-color: rgb(161, 149, 149);
+}
+
+.scores-row {
+    text-align: center;
+}
+
+.pars-row {
+    color: white;
+    background-color: black;
+    text-align: center;
+}
+
+.scorecard-header {
+    text-align: left;
+    font-weight: 400;
+}
+
+input[type='number'] {
+    width: 35px;
+    height: 40px;
+    text-align: center;
+}
+
+input[type='date'] {
+    margin-top: 15px;
+}
+
+input,
+button {
+    padding: 7px;
+}
+
+button {
+    margin: 10px;
+}
+
+td,
+th {
+    padding: 5px;
+    border-style: solid;
+    border-color: gray;
+    border-width: 1px;
+}
+
+th {
+    width: 100px;
+}
+
+#course {
+    margin: 0px;
+    float: left;
+    height: 50px;
+}
+
+#date {
+    margin: 0px;
+    float: right;
+}
+
+#general-info {
+    margin: 0 auto;
+    width: 95%;
+    text-align: center;
+}
+
+#add-golfer, #delete-golfer-button {
+    margin: 0px;
+    float: left;
+    height: 40px;
+    font-size: 15px;
+    margin-right: 20px;
+}
+
+#post-match,
+#new-course-button,
+#submit-button,
+#edit-match {
+    margin-left: 10px;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+#champion-indicator {
+    margin-top: 21px;
+}
+
+#add-course {
+    margin: 0px;
+    float: right;
+    height: 40px;
+    font-size: 15px;
+}
+
+#buttons {
+    margin: 0 auto;
+    width: 95%;
+    text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#course-label {
+    float: left;
+}
+
+.resize {
+    width: 400px;
+    height: auto;
+}
+
+.yardages-row .new-yardages {
+    width: 43px;
+    height: 40px;
+    text-align: center;
+}
+
+.yardages-row .new-yardages-long {
+    width: 52px;
+    height: 40px;
+    text-align: center;
+}
+
+.course-information {
+    margin: 10px;
+}
+
+.course-or-tees {
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+td.triple-bogey-or-worse {
+    background-color: #caadc5;
+    text-align: center;
+}
+
+td.birdie-or-better {
+    background-color: #95ef86;
+    text-align: center;
+}
+
+td.par {
+    background-color: #fceb9e;
+    text-align: center;
+}
+
+td.double-bogey {
+    background-color: #ff8f8f;
+    text-align: center;
+}
+
+td.bogey {
+    text-align: center;
+}
+
+.handwritten-score {
+    font-family: ink free;
+    font-weight: semibold;
+}
+
+.scorecard-course-name {
+    margin: 0px;
+    float: left;
+}
+
+.scorecard-course-date {
+    margin: 0px;
+    float: right;
+}
+
+#golfer-name {
+    padding-right: 5px;
+    margin-bottom: 8px;
+}
+
+.standings tr:nth-of-type(even) {
+    background-color: #f2f2f2;
+}
+
+
+.stats-header {
+    color: black;
+    background-color: #198754;
+    font-weight: 500;
+    text-align: center;
+    border-bottom: 3px solid black;
+}
+
+td.stat {
+    text-align: center;
+    padding: 8px;
+}
+
+#choose-golfer {
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+.golfer-row {
+    cursor: pointer;
+    cursor: hand;
+}
+
+#stats,
+#averages {
+    padding: 25px;
+    width: 75%;
+    border: 0px;
+}
+
+#course-stats {
+    padding: 25px;
+    width: 100%;
+    border: 0px;
+}
+
+#content {
+    margin: 20px;
+}
+
+#course-selector,
+#vs-selector {
+    border-bottom: 1px solid #DDDDDD;
+    place-items: center normal;
+    margin: 20px;
+}
+
+#round-marker {
+    text-decoration: underline;
+    padding: 10px;
+    height: 5px;
+    margin: 10px;
+}
+
+.course-buttons {
+    margin: 5px;
+}
+
+#golfer-label {
+    margin-left: 10px;
+}
+
+#vs-submit-button {
+    margin-left: 20px;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+#login-button, #register-button {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
+}
+
+.pagination>li>a {
+    background-color: #198754;
+    color: white;
+}
+
+.pagination>li>a:focus,
+.pagination>li>a:hover,
+.pagination>li>span:focus,
+.pagination>li>span:hover {
+    color: #198754;
+    background-color: white;
+    border-color: white;
+}
+
+.page-item.active .page-link {
+    color: #198754;
+    background-color: white;
+    border: solid 1px white;
+}
+
+.rounds-paginator {
+    margin-top: 25px;
+    margin-bottom: 50px;
+}
+
+.birdie-box,
+.par-box,
+.double-bogey-box,
+.triple-or-worse-box {
+    width: 10px;
+    height: 10px;
+    border: solid 1px grey;
+    float: left;
+    margin-top: 4px;
+    margin-right: 4px;
+}
+
+.birdie-box {
+    background-color: #95ef86;
+}
+
+.par-box {
+    background-color: #fceb9e;
+
+}
+
+.double-bogey-box {
+    background-color: #ff8f8f;
+}
+
+.triple-or-worse-box {
+    background-color: #caadc5;
+}
+
+.score-label {
+    font-size: 12px;
+    float: left;
+}
+
+.score-key {
+    width: 75%;
+    display: flex;
+    margin-right: 0px;
+}
+
+.birdie-key,
+.par-key,
+.double-bogey-key,
+.triple-or-worse-key {
+    height: 20px;
+    text-align: left;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.scorecard-table {
+    margin-bottom: 5px;
+}
+
+.edit-match-field {
+    width: 100%;
+    border: 0px;
+    outline: none;
+}
+
+.edit-match-course {
+    width: 75%;
+    float: left;
+    outline: none;
+}
+
+#delete-match,
+#edit-match {
+    margin: 10px;
+}
+
+#edit-round {
+    float: right;
+    margin: 0px;
+    height: 20px;
+    font-size: 12px;
+    padding: 5px;
+    padding-top: 0px;
+}
+
+#name-and-year {
+    margin-right: auto;
+}

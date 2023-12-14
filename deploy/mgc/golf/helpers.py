@@ -100,7 +100,7 @@ def get_stats(rounds):
     par_four_average = round((par_four_sum / par_four_counter) + 4, 2)
     par_five_average = round((par_five_sum / par_five_counter) + 5, 2)
     # Create list of stats to be returned
-    golfer_stats = [golfer, round_amount, avg_score, avg_par, best_score,
+    golfer_stats = [golfer.first_name, round_amount, avg_score, avg_par, best_score,
                     birdies_per, pars_per, bogeys_per, doubles_per,
                     triples_per, maxes_per, par_three_average,
                     par_four_average, par_five_average, eagles]
@@ -110,6 +110,7 @@ def get_stats(rounds):
 def get_scorecard(round) -> list:
     """Returns a scorecard for a round (queryset)"""
     # Create a list for each row in the scorecard
+    match_id = round.match
     handicaps = []
     pars = []
     strokes = []
@@ -137,7 +138,7 @@ def get_scorecard(round) -> list:
     zipped_scores = zip(strokes, hole_scores)  # Zip scores for rendering
     scorecard = {'round': round, 'course': course, 'yardages': yardages,
                  'handicaps': handicaps, 'pars': pars, 'strokes': strokes,
-                 'to_pars': to_pars, 'zipped_scores': zipped_scores}
+                 'to_pars': to_pars, 'match_id': match_id, 'zipped_scores': zipped_scores}
     return scorecard
 
 
@@ -194,7 +195,8 @@ def get_vs_scorecards(golfer_rounds) -> list:
                      'strokes_one': strokes_one, 'strokes_two': strokes_two,
                      'to_pars_one': to_pars_one, 'to_pars_two': to_pars_two,
                      'zipped_scores_one': zipped_scores_one,
-                     'zipped_scores_two': zipped_scores_two}
+                     'zipped_scores_two': zipped_scores_two,
+                     }
         scorecards.append(scorecard)
     return scorecards
 
@@ -274,6 +276,48 @@ def get_to_pars(strokes: list, pars: list) -> list:
     to_pars.append(total_to_par)
     to_pars.insert(9, front_nine_to_par)
     return to_pars
+
+
+def api_add_course(request, pars: list, yardages: list, handicaps: list, new=True):
+    """Adds a course to the database via API"""
+    # Check if the course is new or just new tee's
+    if new:
+        tees = request.data['tee']
+        course_name = request.data['newCourseName']
+        capitalized_words = [word.capitalize()
+                             for word in course_name.split()]
+        course_name = ' '.join(capitalized_words)
+    else:
+        tees = request.data['tee']
+        course_name = request.data['course']
+    course_abbreviation = abbreviate_course(course_name)
+    yardages = request.data['yardages']
+    yardages_front = sum(yardages[:9])
+    yardages_back = sum(yardages[9:])
+    yaradage_total = sum(yardages)
+    pars = request.data['pars']
+    pars_front = sum(pars[:9])
+    pars_back = sum(pars[9:])
+    pars_total = sum(pars)
+    # Create Course
+    this_course = Course(name=course_name,
+                         tees=tees,
+                         front_par=int(pars_front),
+                         back_par=int(pars_back),
+                         par=int(pars_total),
+                         front_yardage=int(yardages_front),
+                         back_yardage=int(yardages_back),
+                         yardage=int(yaradage_total),
+                         slope=int(request.data['slope']),
+                         course_rating=float(request.data['courseRating']),
+                         abbreviation=course_abbreviation)
+    this_course.save()
+    # Add holes
+    for i in range(18):
+        this_hole = Hole(course=this_course, tee=i+1,
+                         par=pars[i], yardage=yardages[i],
+                         handicap=handicaps[i])
+        this_hole.save()
 
 
 def add_course(request, pars: list, yardages: list, handicaps: list, new=True):
@@ -419,11 +463,14 @@ def get_tee_options(course: str, tees: str) -> list:
     duplicate_courses = Course.objects.filter(name=course)
     for course in duplicate_courses:
         tee_options.append(course.tees)
+    if tees not in tee_options:
+        return tee_options
     # Move selected tees to the front
-    selected_tee_index = tee_options.index(tees)
-    if selected_tee_index != 0:
-        tee_options.insert(0, tee_options.pop(selected_tee_index))
-    return tee_options
+    else:
+        selected_tee_index = tee_options.index(tees)
+        if selected_tee_index != 0:
+            tee_options.insert(0, tee_options.pop(selected_tee_index))
+        return tee_options
 
 
 def get_course_info(course) -> list:
