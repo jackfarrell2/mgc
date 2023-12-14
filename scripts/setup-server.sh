@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # Sets up new server to host Django app
-export SERVER=
+export SERVER=137.184.45.38
 DJANGO_SETTINGS_MODULE="mgc.settings.prod"
 
 # Take secret key as 1st argument
