@@ -52,9 +52,11 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'http://137.184.117.146',
     'http://localhost:3000',
-    'http://172.22.160.1',
-    'http://172.22.160.1:3000',
+    'http://www.oldmanchestergolfclub.xyz',
+    'https://manchestergolfclub.com',
+    'https://www.manchestergolfclub.com',
 ]
 
 
