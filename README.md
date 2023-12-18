@@ -4,6 +4,10 @@
 
 Welcome to MGC! This app allows users to upload, compare, and analyze their golf rounds. You can manage rounds, courses, and view various statistics.
 
+This is the back-end. If you are looking for the front-end please navigate to the "mancc" project: [GitHub Repository](https://github.com/jackfarrell2/mancc).
+
+Check out the deployed project at [Manchester Golf Club](https://manchestergolfclub.com).
+
 ## Getting Started
 
 ### Homepage
@@ -35,7 +39,8 @@ To upload a round, follow these steps:
 
 1. Navigate to the "Post a Match" section.
 2. Fill in the required information: date, course, scores, etc.
-3. Submit the round to save your data.
+3. If a course needs to be added or edited, click the plus button next to the course name dropdown menu.
+4. Submit the round to save your data.
 
 ### Edit Rounds
 
