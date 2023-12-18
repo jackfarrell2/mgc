@@ -1,4 +1,4 @@
-# Golf App Documentation
+# Manchester Golf Club
 
 ## Overview
 
