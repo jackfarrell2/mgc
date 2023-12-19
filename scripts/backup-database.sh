@@ -14,6 +14,6 @@ set -e
 mkdir -p /root/backups/
 cp /app/db.sqlite3 /root/backups/$DBNAME
 EOF
-mkdir -p ~/backups/
-scp root@mgc:/root/backups/* ~/backups
+mkdir -p ~/backups/mgc
+scp root@mgc:/root/backups/* ~/backups/mgc
  
