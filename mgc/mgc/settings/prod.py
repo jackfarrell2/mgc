@@ -10,3 +10,5 @@ CORS_ALLOWED_ORIGINS = [
     'https://manchestergolfclub.com',
     'https://www.manchestergolfclub.com',
 ]
+
+CSRF_TRUSTED_ORIGINS=['https://*.oldmanchestergolfclub.xyz']
