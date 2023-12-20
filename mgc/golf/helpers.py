@@ -487,6 +487,70 @@ def get_course_info(course) -> list:
     return course_info
 
 
+def api_scorecards(scorecards, double=False):
+    """Converts scorecard for API"""
+    if double:
+        api_scorecards = []
+        for scorecard in scorecards:
+            api_scorecard = {}
+            api_scorecard['course_name'] = scorecard['course'].name
+            api_scorecard['tees'] = scorecard['course'].tees
+            api_scorecard['date'] = scorecard['round'].date
+            api_scorecard['yardages'] = scorecard['yardages']
+            api_scorecard['handicaps'] = scorecard['handicaps']
+            api_scorecard['strokes_one'] = scorecard['strokes_one']
+            api_scorecard['strokes_two'] = scorecard['strokes_two']
+            api_scorecard['to_pars_one'] = scorecard['to_pars_one']
+            api_scorecard['to_pars_two'] = scorecard['to_pars_two']
+            api_scorecard['pars'] = scorecard['pars']
+            api_scorecards.append(api_scorecard)
+            try:
+                api_scorecard['match'] = scorecard['round'].match
+            except:
+                pass
+        return api_scorecards
+    else:
+        api_scorecards = []
+        for scorecard in scorecards:
+            api_scorecard = {}
+            api_scorecard['course_name'] = scorecard['course'].name
+            api_scorecard['tees'] = scorecard['course'].tees
+            api_scorecard['date'] = scorecard['round'].date
+            api_scorecard['yardages'] = scorecard['yardages']
+            api_scorecard['handicaps'] = scorecard['handicaps']
+            api_scorecard['strokes'] = scorecard['strokes']
+            api_scorecard['to_pars'] = scorecard['to_pars']
+            api_scorecard['pars'] = scorecard['pars']
+            api_scorecards.append(api_scorecard)
+            try:
+                api_scorecard['match'] = scorecard['match_id']
+            except:
+                pass
+        return api_scorecards
+
+
+def api_stats(stats):
+    """Converts stats info for API"""
+    golfer_info = {}
+    for stat in stats:
+        golfer_info['Golfer'] = stats[0]
+        golfer_info['Rounds'] = stats[1]
+        golfer_info['Avg Score'] = stats[2]
+        golfer_info['Avg Par'] = stats[3]
+        golfer_info['Best Score'] = stats[4]
+        golfer_info['Birdies Per'] = stats[5]
+        golfer_info['Pars Per'] = stats[6]
+        golfer_info['Bogeys Per'] = stats[7]
+        golfer_info['Doubles Per'] = stats[8]
+        golfer_info['Triples Per'] = stats[9]
+        golfer_info['Maxes Per'] = stats[10]
+        golfer_info['Par 3 Avg'] = stats[11]
+        golfer_info['Par 4 Avg'] = stats[12]
+        golfer_info['Par 5 Avg'] = stats[13]
+        golfer_info['Eagles'] = stats[14]
+    return golfer_info
+
+
 def get_bart_birdies() -> int:
     """Returns how many days since Bart's last birdie"""
     bart = User.objects.get(pk=7)
