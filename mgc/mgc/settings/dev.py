@@ -9,4 +9,5 @@ CORS_ALLOWED_ORIGINS = [
     'http://www.oldmanchestergolfclub.xyz',
     'https://manchestergolfclub.com',
     'https://www.manchestergolfclub.com',
+    'http://192.168.1.164:8080',
 ]
